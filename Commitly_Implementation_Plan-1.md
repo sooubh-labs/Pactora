@@ -1,4 +1,4 @@
-# Commitly — Full Implementation Plan
+# Pactora — Full Implementation Plan
 > Track promises, borrowed items, and informal commitments — fully offline.
 
 ---
