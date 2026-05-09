@@ -30,7 +30,7 @@ dependencies:
   permission_handler: ^11.3.1
   table_calendar: ^3.1.2
   fl_chart: ^0.68.0
-  fast_contacts: ^3.1.4
+  fast_contacts: ^5.0.1
 
 dev_dependencies:
   flutter_test:
