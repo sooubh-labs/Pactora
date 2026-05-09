@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sooubh.pactora"
-        minSdk = 21 // Isar requires at least 21
+        minSdk = flutter.minSdkVersion // Isar requires at least 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -38,10 +38,17 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String
+            val alias = keystoreProperties["keyAlias"]
+            val keyPass = keystoreProperties["keyPassword"]
+            val storePass = keystoreProperties["storePassword"]
+            val storeFileProp = keystoreProperties["storeFile"]
+
+            if (alias != null && keyPass != null && storePass != null && storeFileProp != null) {
+                keyAlias = alias as String
+                keyPassword = keyPass as String
+                storeFile = file(storeFileProp as String)
+                storePassword = storePass as String
+            }
         }
     }
 

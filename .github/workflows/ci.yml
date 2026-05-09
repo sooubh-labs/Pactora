@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Environment Info
+        run: |
+          echo "GitHub SHA: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          git status
+          flutter --version
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
