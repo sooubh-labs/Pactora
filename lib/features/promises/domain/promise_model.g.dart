@@ -68,35 +68,46 @@ const PromiseSchema = CollectionSchema(
       name: r'notes',
       type: IsarType.string,
     ),
-    r'personId': PropertySchema(
+    r'parentPromiseId': PropertySchema(
       id: 10,
+      name: r'parentPromiseId',
+      type: IsarType.long,
+    ),
+    r'personId': PropertySchema(
+      id: 11,
       name: r'personId',
       type: IsarType.long,
     ),
     r'priority': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'priority',
       type: IsarType.byte,
       enumMap: _PromisepriorityEnumValueMap,
     ),
+    r'recurrence': PropertySchema(
+      id: 13,
+      name: r'recurrence',
+      type: IsarType.byte,
+      enumMap: _PromiserecurrenceEnumValueMap,
+    ),
     r'reminderConfigJson': PropertySchema(
-      id: 12,
+      id: 14,
       name: r'reminderConfigJson',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 13,
+      id: 15,
       name: r'status',
       type: IsarType.byte,
       enumMap: _PromisestatusEnumValueMap,
     ),
     r'title': PropertySchema(
-      id: 14,
+      id: 16,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 15,
+      id: 17,
       name: r'type',
       type: IsarType.byte,
       enumMap: _PromisetypeEnumValueMap,
@@ -181,12 +192,14 @@ void _promiseSerialize(
   writer.writeBool(offsets[7], object.iMadeThisPromise);
   writer.writeBool(offsets[8], object.isArchived);
   writer.writeString(offsets[9], object.notes);
-  writer.writeLong(offsets[10], object.personId);
-  writer.writeByte(offsets[11], object.priority.index);
-  writer.writeString(offsets[12], object.reminderConfigJson);
-  writer.writeByte(offsets[13], object.status.index);
-  writer.writeString(offsets[14], object.title);
-  writer.writeByte(offsets[15], object.type.index);
+  writer.writeLong(offsets[10], object.parentPromiseId);
+  writer.writeLong(offsets[11], object.personId);
+  writer.writeByte(offsets[12], object.priority.index);
+  writer.writeByte(offsets[13], object.recurrence.index);
+  writer.writeString(offsets[14], object.reminderConfigJson);
+  writer.writeByte(offsets[15], object.status.index);
+  writer.writeString(offsets[16], object.title);
+  writer.writeByte(offsets[17], object.type.index);
 }
 
 Promise _promiseDeserialize(
@@ -209,16 +222,20 @@ Promise _promiseDeserialize(
   object.id = id;
   object.isArchived = reader.readBool(offsets[8]);
   object.notes = reader.readStringOrNull(offsets[9]);
-  object.personId = reader.readLong(offsets[10]);
+  object.parentPromiseId = reader.readLongOrNull(offsets[10]);
+  object.personId = reader.readLong(offsets[11]);
   object.priority =
-      _PromisepriorityValueEnumMap[reader.readByteOrNull(offsets[11])] ??
+      _PromisepriorityValueEnumMap[reader.readByteOrNull(offsets[12])] ??
           Priority.low;
-  object.reminderConfigJson = reader.readStringOrNull(offsets[12]);
+  object.recurrence =
+      _PromiserecurrenceValueEnumMap[reader.readByteOrNull(offsets[13])] ??
+          RecurrenceType.none;
+  object.reminderConfigJson = reader.readStringOrNull(offsets[14]);
   object.status =
-      _PromisestatusValueEnumMap[reader.readByteOrNull(offsets[13])] ??
+      _PromisestatusValueEnumMap[reader.readByteOrNull(offsets[15])] ??
           PromiseStatus.pending;
-  object.title = reader.readString(offsets[14]);
-  object.type = _PromisetypeValueEnumMap[reader.readByteOrNull(offsets[15])] ??
+  object.title = reader.readString(offsets[16]);
+  object.type = _PromisetypeValueEnumMap[reader.readByteOrNull(offsets[17])] ??
       PromiseType.iPromised;
   return object;
 }
@@ -252,18 +269,23 @@ P _promiseDeserializeProp<P>(
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 11:
+      return (reader.readLong(offset)) as P;
+    case 12:
       return (_PromisepriorityValueEnumMap[reader.readByteOrNull(offset)] ??
           Priority.low) as P;
-    case 12:
-      return (reader.readStringOrNull(offset)) as P;
     case 13:
+      return (_PromiserecurrenceValueEnumMap[reader.readByteOrNull(offset)] ??
+          RecurrenceType.none) as P;
+    case 14:
+      return (reader.readStringOrNull(offset)) as P;
+    case 15:
       return (_PromisestatusValueEnumMap[reader.readByteOrNull(offset)] ??
           PromiseStatus.pending) as P;
-    case 14:
+    case 16:
       return (reader.readString(offset)) as P;
-    case 15:
+    case 17:
       return (_PromisetypeValueEnumMap[reader.readByteOrNull(offset)] ??
           PromiseType.iPromised) as P;
     default:
@@ -304,6 +326,20 @@ const _PromisepriorityValueEnumMap = {
   0: Priority.low,
   1: Priority.medium,
   2: Priority.high,
+};
+const _PromiserecurrenceEnumValueMap = {
+  'none': 0,
+  'daily': 1,
+  'weekly': 2,
+  'monthly': 3,
+  'yearly': 4,
+};
+const _PromiserecurrenceValueEnumMap = {
+  0: RecurrenceType.none,
+  1: RecurrenceType.daily,
+  2: RecurrenceType.weekly,
+  3: RecurrenceType.monthly,
+  4: RecurrenceType.yearly,
 };
 const _PromisestatusEnumValueMap = {
   'pending': 0,
@@ -1467,6 +1503,78 @@ extension PromiseQueryFilter
     });
   }
 
+  QueryBuilder<Promise, Promise, QAfterFilterCondition>
+      parentPromiseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'parentPromiseId',
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition>
+      parentPromiseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'parentPromiseId',
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> parentPromiseIdEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parentPromiseId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition>
+      parentPromiseIdGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parentPromiseId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> parentPromiseIdLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parentPromiseId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> parentPromiseIdBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parentPromiseId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Promise, Promise, QAfterFilterCondition> personIdEqualTo(
       int value) {
     return QueryBuilder.apply(this, (query) {
@@ -1565,6 +1673,59 @@ extension PromiseQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'priority',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> recurrenceEqualTo(
+      RecurrenceType value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'recurrence',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> recurrenceGreaterThan(
+    RecurrenceType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'recurrence',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> recurrenceLessThan(
+    RecurrenceType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'recurrence',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterFilterCondition> recurrenceBetween(
+    RecurrenceType lower,
+    RecurrenceType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'recurrence',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -2079,6 +2240,18 @@ extension PromiseQuerySortBy on QueryBuilder<Promise, Promise, QSortBy> {
     });
   }
 
+  QueryBuilder<Promise, Promise, QAfterSortBy> sortByParentPromiseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentPromiseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> sortByParentPromiseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentPromiseId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Promise, Promise, QAfterSortBy> sortByPersonId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'personId', Sort.asc);
@@ -2100,6 +2273,18 @@ extension PromiseQuerySortBy on QueryBuilder<Promise, Promise, QSortBy> {
   QueryBuilder<Promise, Promise, QAfterSortBy> sortByPriorityDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'priority', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> sortByRecurrence() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recurrence', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> sortByRecurrenceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recurrence', Sort.desc);
     });
   }
 
@@ -2274,6 +2459,18 @@ extension PromiseQuerySortThenBy
     });
   }
 
+  QueryBuilder<Promise, Promise, QAfterSortBy> thenByParentPromiseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentPromiseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> thenByParentPromiseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentPromiseId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Promise, Promise, QAfterSortBy> thenByPersonId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'personId', Sort.asc);
@@ -2295,6 +2492,18 @@ extension PromiseQuerySortThenBy
   QueryBuilder<Promise, Promise, QAfterSortBy> thenByPriorityDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'priority', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> thenByRecurrence() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recurrence', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QAfterSortBy> thenByRecurrenceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recurrence', Sort.desc);
     });
   }
 
@@ -2411,6 +2620,12 @@ extension PromiseQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Promise, Promise, QDistinct> distinctByParentPromiseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'parentPromiseId');
+    });
+  }
+
   QueryBuilder<Promise, Promise, QDistinct> distinctByPersonId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'personId');
@@ -2420,6 +2635,12 @@ extension PromiseQueryWhereDistinct
   QueryBuilder<Promise, Promise, QDistinct> distinctByPriority() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'priority');
+    });
+  }
+
+  QueryBuilder<Promise, Promise, QDistinct> distinctByRecurrence() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'recurrence');
     });
   }
 
@@ -2520,6 +2741,12 @@ extension PromiseQueryProperty
     });
   }
 
+  QueryBuilder<Promise, int?, QQueryOperations> parentPromiseIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'parentPromiseId');
+    });
+  }
+
   QueryBuilder<Promise, int, QQueryOperations> personIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'personId');
@@ -2529,6 +2756,12 @@ extension PromiseQueryProperty
   QueryBuilder<Promise, Priority, QQueryOperations> priorityProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'priority');
+    });
+  }
+
+  QueryBuilder<Promise, RecurrenceType, QQueryOperations> recurrenceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'recurrence');
     });
   }
 

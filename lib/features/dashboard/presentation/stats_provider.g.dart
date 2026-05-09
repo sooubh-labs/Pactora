@@ -6,7 +6,7 @@ part of 'stats_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pactoraStatsHash() => r'38db45895c6fb51ad56f2087473f799c115c915d';
+String _$pactoraStatsHash() => r'0b6e887b2e7e6e06363c9921b3b1f43a72961c82';
 
 /// See also [pactoraStats].
 @ProviderFor(pactoraStats)
