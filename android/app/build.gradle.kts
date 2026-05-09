@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sooubh.pactora"
-        minSdk = flutter.minSdkVersion // Isar requires at least 21
+        minSdk = 21 // Isar requires at least 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
