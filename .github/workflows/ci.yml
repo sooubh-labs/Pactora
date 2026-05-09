@@ -13,12 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Environment Info
-        run: |
-          echo "GitHub SHA: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref }}"
-          git status
-          flutter --version
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -27,11 +26,12 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+      - name: Environment Info
+        run: |
+          echo "GitHub SHA: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          git status
+          flutter --version
 
       - name: Install dependencies
         run: flutter pub get
