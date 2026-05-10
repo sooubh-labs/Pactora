@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../core/theme/app_colors.dart';
 
 class QuickAddSheet extends StatelessWidget {
   const QuickAddSheet({super.key});
@@ -10,80 +9,44 @@ class QuickAddSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Quick Add',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const Gap(16),
+          const Text('Quick Add', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 24),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _QuickAddButton(
-                icon: Icons.handshake_outlined,
-                label: 'Promise',
-                color: AppColors.task,
-                onTap: () {
-                  context.pop();
-                  context.push('/promises/add');
-                },
-              ),
-              _QuickAddButton(
-                icon: Icons.swap_horiz,
-                label: 'Borrow',
-                color: AppColors.borrow,
-                onTap: () {
-                  context.pop();
-                  context.push('/borrow/add');
-                },
-              ),
-              _QuickAddButton(
-                icon: Icons.currency_rupee,
-                label: 'Money',
-                color: AppColors.money,
-                onTap: () {
-                  context.pop();
-                  context.push('/money/add');
-                },
-              ),
+              _buildAction(context, Icons.handshake, 'Promise', '/promises/add'),
+              _buildAction(context, Icons.currency_rupee, 'Transaction', '/finances/add'),
+              _buildAction(context, Icons.person_add, 'Person', '/people/add'),
             ],
           ),
-          const Gap(24),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
-}
 
-class _QuickAddButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickAddButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAction(BuildContext context, IconData icon, String label, String route) {
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        Navigator.pop(context);
+        context.push(route);
+      },
       child: Column(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: color.withValues(alpha: 0.1),
-            child: Icon(icon, color: color, size: 28),
+            backgroundColor: AppColors.primary.withOpacity(0.1),
+            child: Icon(icon, color: AppColors.primary, size: 28),
           ),
-          const Gap(8),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );
