@@ -22,7 +22,7 @@ class QuickAddSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildAction(context, Icons.handshake, 'Promise', '/promises/add'),
-              _buildAction(context, Icons.currency_rupee, 'Transaction', '/finances/add'),
+              _buildAction(context, Icons.currency_rupee, 'Transaction', '/money/add'),
               _buildAction(context, Icons.person_add, 'Person', '/people/add'),
             ],
           ),

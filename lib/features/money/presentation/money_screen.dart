@@ -17,10 +17,9 @@ class MoneyScreen extends ConsumerWidget {
 
     return DefaultTabController(
       length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Money Tracker'),
-          bottom: const TabBar(
+      child: Column(
+        children: [
+          const TabBar(
             isScrollable: true,
             tabs: [
               Tab(text: 'All'),
@@ -29,25 +28,23 @@ class MoneyScreen extends ConsumerWidget {
               Tab(text: 'Settled'),
             ],
           ),
-        ),
-        body: recordsAsync.when(
-          data: (records) {
-            return TabBarView(
-              children: [
-                _RecordList(records: records),
-                _RecordList(records: records.where((r) => r.iOwe && r.status != MoneyStatus.paid).toList()),
-                _RecordList(records: records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).toList()),
-                _RecordList(records: records.where((r) => r.status == MoneyStatus.paid).toList()),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/money/add'),
-          child: const Icon(Icons.add),
-        ),
+          Expanded(
+            child: recordsAsync.when(
+              data: (records) {
+                return TabBarView(
+                  children: [
+                    _RecordList(records: records),
+                    _RecordList(records: records.where((r) => r.iOwe && r.status != MoneyStatus.paid).toList()),
+                    _RecordList(records: records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).toList()),
+                    _RecordList(records: records.where((r) => r.status == MoneyStatus.paid).toList()),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text('Error: $err')),
+            ),
+          ),
+        ],
       ),
     );
   }

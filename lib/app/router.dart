@@ -10,6 +10,7 @@ import '../features/dashboard/presentation/calendar_screen.dart';
 import '../features/dashboard/presentation/timeline_screen.dart';
 import '../features/dashboard/presentation/stats_screen.dart';
 import '../features/dashboard/presentation/archive_screen.dart';
+import '../features/finances/presentation/finances_screen.dart';
 import '../features/promises/presentation/promises_screen.dart';
 import '../features/promises/presentation/add_promise_screen.dart';
 import '../features/promises/presentation/promise_detail_screen.dart';
@@ -66,6 +67,10 @@ final router = GoRouter(
         GoRoute(
           path: '/archive',
           builder: (context, state) => const ArchiveScreen(),
+        ),
+        GoRoute(
+          path: '/finances',
+          builder: (context, state) => const FinancesScreen(),
         ),
         GoRoute(
           path: '/promises',

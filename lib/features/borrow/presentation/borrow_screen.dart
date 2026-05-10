@@ -17,10 +17,9 @@ class BorrowScreen extends ConsumerWidget {
 
     return DefaultTabController(
       length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Borrow & Lend'),
-          bottom: const TabBar(
+      child: Column(
+        children: [
+          const TabBar(
             isScrollable: true,
             tabs: [
               Tab(text: 'All'),
@@ -29,25 +28,23 @@ class BorrowScreen extends ConsumerWidget {
               Tab(text: 'Returned'),
             ],
           ),
-        ),
-        body: itemsAsync.when(
-          data: (items) {
-            return TabBarView(
-              children: [
-                _ItemList(items: items),
-                _ItemList(items: items.where((i) => i.status == ItemStatus.active).toList()),
-                _ItemList(items: items.where((i) => i.status == ItemStatus.overdue).toList()),
-                _ItemList(items: items.where((i) => i.status == ItemStatus.returned).toList()),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/borrow/add'),
-          child: const Icon(Icons.add),
-        ),
+          Expanded(
+            child: itemsAsync.when(
+              data: (items) {
+                return TabBarView(
+                  children: [
+                    _ItemList(items: items),
+                    _ItemList(items: items.where((i) => i.status == ItemStatus.active).toList()),
+                    _ItemList(items: items.where((i) => i.status == ItemStatus.overdue).toList()),
+                    _ItemList(items: items.where((i) => i.status == ItemStatus.returned).toList()),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text('Error: $err')),
+            ),
+          ),
+        ],
       ),
     );
   }
