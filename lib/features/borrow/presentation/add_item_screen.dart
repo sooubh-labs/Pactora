@@ -6,6 +6,7 @@ import '../domain/item_model.dart';
 import '../../people/domain/person_model.dart';
 import 'item_provider.dart';
 import '../../promises/presentation/widgets/person_picker_field.dart';
+import '../../../shared/widgets/proof_upload_widget.dart';
 
 class AddItemScreen extends ConsumerStatefulWidget {
   final BorrowItem? item;
@@ -110,6 +111,14 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              ProofUploadWidget(
+                onUpload: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Photo upload coming soon')),
+                  );
+                },
               ),
             ],
           ),

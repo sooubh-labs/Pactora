@@ -8,6 +8,7 @@ import '../../people/domain/person_model.dart';
 import 'promise_provider.dart';
 import 'widgets/category_chip_selector.dart';
 import 'widgets/person_picker_field.dart';
+import '../../../shared/widgets/proof_upload_widget.dart';
 
 class AddPromiseScreen extends ConsumerStatefulWidget {
   final Promise? promise;
@@ -178,6 +179,14 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              ProofUploadWidget(
+                onUpload: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Photo upload coming soon')),
+                  );
+                },
               ),
             ],
           ),

@@ -6,6 +6,7 @@ import '../domain/money_model.dart';
 import '../../people/domain/person_model.dart';
 import 'money_provider.dart';
 import '../../promises/presentation/widgets/person_picker_field.dart';
+import '../../../shared/widgets/proof_upload_widget.dart';
 
 class AddMoneyRecordScreen extends ConsumerStatefulWidget {
   final MoneyRecord? record;
@@ -114,6 +115,14 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+              ProofUploadWidget(
+                onUpload: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Photo upload coming soon')),
+                  );
+                },
               ),
             ],
           ),
