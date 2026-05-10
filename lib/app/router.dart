@@ -15,11 +15,9 @@ import '../features/promises/presentation/promises_screen.dart';
 import '../features/promises/presentation/add_promise_screen.dart';
 import '../features/promises/presentation/promise_detail_screen.dart';
 import '../features/promises/presentation/promise_provider.dart';
-import '../features/borrow/presentation/borrow_screen.dart';
 import '../features/borrow/presentation/add_item_screen.dart';
 import '../features/borrow/presentation/borrow_item_detail_screen.dart';
 import '../features/borrow/presentation/item_provider.dart';
-import '../features/money/presentation/money_screen.dart';
 import '../features/money/presentation/add_money_record_screen.dart';
 import '../features/money/presentation/money_record_detail_screen.dart';
 import '../features/money/presentation/money_provider.dart';
@@ -70,7 +68,12 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/finances',
-          builder: (context, state) => const FinancesScreen(),
+          builder: (context, state) {
+            final tab = state.uri.queryParameters['tab'];
+            int index = 0;
+            if (tab == 'borrow') index = 1;
+            return FinancesScreen(initialIndex: index);
+          },
         ),
         GoRoute(
           path: '/promises',
@@ -106,7 +109,7 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/borrow',
-          builder: (context, state) => const BorrowScreen(),
+          builder: (context, state) => const FinancesScreen(initialIndex: 1),
           routes: [
             GoRoute(
               path: 'add',
@@ -138,7 +141,7 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/money',
-          builder: (context, state) => const MoneyScreen(),
+          builder: (context, state) => const FinancesScreen(initialIndex: 0),
           routes: [
             GoRoute(
               path: 'add',

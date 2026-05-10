@@ -4,7 +4,8 @@ import '../../money/presentation/money_screen.dart';
 import '../../borrow/presentation/borrow_screen.dart';
 
 class FinancesScreen extends StatefulWidget {
-  const FinancesScreen({super.key});
+  final int initialIndex;
+  const FinancesScreen({super.key, this.initialIndex = 0});
 
   @override
   State<FinancesScreen> createState() => _FinancesScreenState();
@@ -16,7 +17,11 @@ class _FinancesScreenState extends State<FinancesScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialIndex,
+    );
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       setState(() {});

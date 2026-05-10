@@ -95,14 +95,14 @@ class DashboardScreen extends ConsumerWidget {
           count: summary.activeBorrows.toString(),
           color: AppColors.borrow,
           icon: Icons.swap_horiz,
-          onTap: () => context.go('/borrow'),
+          onTap: () => context.go('/finances?tab=borrow'),
         ),
         _StatCard(
           label: 'Owed',
           count: '₹${summary.moneyOwedToMe.toStringAsFixed(0)}',
           color: AppColors.money,
           icon: Icons.currency_rupee,
-          onTap: () => context.go('/money'),
+          onTap: () => context.go('/finances?tab=money'),
         ),
       ],
     );
