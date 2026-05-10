@@ -39,10 +39,20 @@ class MainShell extends StatelessWidget {
   }
 
   int _getSelectedIndex(String location) {
-    if (location.startsWith('/dashboard')) return 0;
-    if (location.startsWith('/promises')) return 1;
-    if (location.startsWith('/finances')) return 3;
-    if (location.startsWith('/people')) return 4;
+    if (location.startsWith('/dashboard')) {
+      return 0;
+    }
+    if (location.startsWith('/promises')) {
+      return 1;
+    }
+    if (location.startsWith('/finances') ||
+        location.startsWith('/money') ||
+        location.startsWith('/borrow')) {
+      return 3;
+    }
+    if (location.startsWith('/people')) {
+      return 4;
+    }
     return 0;
   }
 
