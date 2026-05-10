@@ -57,7 +57,7 @@ class _FinancesScreenState extends State<FinancesScreen> with SingleTickerProvid
           Consumer(builder: (context, ref, _) {
             final moneyAsync = ref.watch(allMoneyRecordsProvider);
             final itemsAsync = ref.watch(allItemsProvider);
-            final activeDates = [
+            final activeDates = <DateTime>[
               ...moneyAsync.value?.where((r) => r.dueDate != null).map((r) => r.dueDate!) ?? [],
               ...itemsAsync.value?.where((i) => i.expectedReturn != null).map((i) => i.expectedReturn!) ?? [],
             ];
