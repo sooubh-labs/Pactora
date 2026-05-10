@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 import 'dashboard_provider.dart';
-import '../../promises/presentation/promise_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/quick_add_sheet.dart';
+import 'widgets/calendar_widget.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -46,11 +46,13 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text('Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Gap(16),
               _buildSummaryGrid(summary, context),
               const Gap(24),
-              const Text('Due Today', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Gap(12),
-              const _DueTodayList(),
+              const Text('Upcoming Timeline', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Gap(16),
+              const CalendarWidget(),
             ],
           ),
         ),
@@ -113,47 +115,6 @@ class DashboardScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => const QuickAddSheet(),
-    );
-  }
-}
-
-class _DueTodayList extends ConsumerWidget {
-  const _DueTodayList();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dueTodayAsync = ref.watch(dueTodayPromisesProvider);
-
-    return dueTodayAsync.when(
-      data: (promises) {
-        if (promises.isEmpty) {
-          return const Card(
-            child: Padding(
-              padding: EdgeInsets.all(32.0),
-              child: Center(child: Text('Nothing due today 🎉')),
-            ),
-          );
-        }
-
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: promises.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final promise = promises[index];
-            return Card(
-              child: ListTile(
-                title: Text(promise.title),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/promises/${promise.id}'),
-              ),
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Text('Error: $err'),
     );
   }
 }
