@@ -3,17 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../domain/promise_model.dart';
 import '../domain/promise_enums.dart';
 import 'promise_provider.dart';
 import '../../../core/constants/category_constants.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/horizontal_calendar.dart';
 
-class PromisesScreen extends ConsumerWidget {
+class PromisesScreen extends ConsumerStatefulWidget {
   const PromisesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PromisesScreen> createState() => _PromisesScreenState();
+}
+
+class _PromisesScreenState extends ConsumerState<PromisesScreen> {
+  DateTime _selectedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
     final promisesAsync = ref.watch(allPromisesProvider);
 
     return DefaultTabController(
@@ -37,19 +46,52 @@ class PromisesScreen extends ConsumerWidget {
             ),
           ],
         ),
-        body: promisesAsync.when(
-          data: (promises) {
-            return TabBarView(
-              children: [
-                _PromiseList(promises: promises),
-                _PromiseList(promises: promises.where((p) => p.status == PromiseStatus.pending).toList()),
-                _PromiseList(promises: promises.where((p) => p.status == PromiseStatus.overdue).toList()),
-                _PromiseList(promises: promises.where((p) => p.status == PromiseStatus.completed).toList()),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
+        body: Column(
+          children: [
+            promisesAsync.when(
+              data: (promises) => HorizontalCalendar(
+                activeDates: promises
+                    .where((p) => p.dueDate != null)
+                    .map((p) => p.dueDate!)
+                    .toList(),
+                initialDate: _selectedDate,
+                onDateSelected: (date) {
+                  setState(() => _selectedDate = date);
+                },
+              ),
+              loading: () => const SizedBox(height: 90),
+              error: (_, __) => const SizedBox(height: 90),
+            ),
+            Expanded(
+              child: promisesAsync.when(
+                data: (promises) {
+                  final filteredPromises = promises.where((p) =>
+                    p.dueDate != null && isSameDay(p.dueDate, _selectedDate)
+                  ).toList();
+
+                  return TabBarView(
+                    children: [
+                      _PromiseList(promises: filteredPromises),
+                      _PromiseList(
+                          promises: filteredPromises
+                              .where((p) => p.status == PromiseStatus.pending)
+                              .toList()),
+                      _PromiseList(
+                          promises: filteredPromises
+                              .where((p) => p.status == PromiseStatus.overdue)
+                              .toList()),
+                      _PromiseList(
+                          promises: filteredPromises
+                              .where((p) => p.status == PromiseStatus.completed)
+                              .toList()),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Error: $err')),
+              ),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => context.push('/promises/add'),

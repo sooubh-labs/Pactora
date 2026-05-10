@@ -5,7 +5,6 @@ import 'package:gap/gap.dart';
 import 'dashboard_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/quick_add_sheet.dart';
-import 'widgets/calendar_widget.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -18,6 +17,10 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Pactora'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () => context.push('/calendar'),
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () => context.push('/stats'),
@@ -49,10 +52,27 @@ class DashboardScreen extends ConsumerWidget {
               const Text('Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const Gap(16),
               _buildSummaryGrid(summary, context),
-              const Gap(24),
-              const Text('Upcoming Timeline', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Gap(16),
-              const CalendarWidget(),
+              const Gap(32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Recent Activity', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () => context.push('/timeline'),
+                    child: const Text('View All'),
+                  ),
+                ],
+              ),
+              const Gap(8),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text('Check your Promises or Finances tabs for daily schedules.', 
+                    style: TextStyle(color: Colors.grey.shade500),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -136,28 +156,43 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(icon, color: color, size: 20),
-                  Text(
-                    count,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(icon, color: color, size: 24),
+                    Text(
+                      count,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+                    ),
+                  ],
+                ),
+                const Gap(8),
+                Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
         ),
       ),

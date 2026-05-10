@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../domain/money_model.dart';
 import '../../promises/domain/promise_enums.dart';
 import 'money_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class MoneyScreen extends ConsumerWidget {
-  const MoneyScreen({super.key});
+  final DateTime? selectedDate;
+  const MoneyScreen({super.key, this.selectedDate});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +32,11 @@ class MoneyScreen extends ConsumerWidget {
           ),
           Expanded(
             child: recordsAsync.when(
-              data: (records) {
+              data: (allRecords) {
+                final records = selectedDate == null 
+                  ? allRecords 
+                  : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, selectedDate)).toList();
+
                 return TabBarView(
                   children: [
                     _RecordList(records: records),

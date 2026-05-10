@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../domain/item_model.dart';
 import '../../promises/domain/promise_enums.dart';
 import 'item_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class BorrowScreen extends ConsumerWidget {
-  const BorrowScreen({super.key});
+  final DateTime? selectedDate;
+  const BorrowScreen({super.key, this.selectedDate});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +32,11 @@ class BorrowScreen extends ConsumerWidget {
           ),
           Expanded(
             child: itemsAsync.when(
-              data: (items) {
+              data: (allItems) {
+                final items = selectedDate == null 
+                  ? allItems 
+                  : allItems.where((i) => i.expectedReturn != null && isSameDay(i.expectedReturn, selectedDate)).toList();
+
                 return TabBarView(
                   children: [
                     _ItemList(items: items),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../money/presentation/money_screen.dart';
 import '../../borrow/presentation/borrow_screen.dart';
+import '../../../shared/widgets/horizontal_calendar.dart';
+import '../../money/presentation/money_provider.dart';
+import '../../borrow/presentation/item_provider.dart';
 
 class FinancesScreen extends StatefulWidget {
   final int initialIndex;
@@ -13,6 +17,7 @@ class FinancesScreen extends StatefulWidget {
 
 class _FinancesScreenState extends State<FinancesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -47,11 +52,30 @@ class _FinancesScreenState extends State<FinancesScreen> with SingleTickerProvid
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          MoneyScreen(),
-          BorrowScreen(),
+      body: Column(
+        children: [
+          Consumer(builder: (context, ref, _) {
+            final moneyAsync = ref.watch(allMoneyRecordsProvider);
+            final itemsAsync = ref.watch(allItemsProvider);
+            final activeDates = [
+              ...moneyAsync.value?.where((r) => r.dueDate != null).map((r) => r.dueDate!) ?? [],
+              ...itemsAsync.value?.where((i) => i.expectedReturn != null).map((i) => i.expectedReturn!) ?? [],
+            ];
+            return HorizontalCalendar(
+              activeDates: activeDates,
+              initialDate: _selectedDate,
+              onDateSelected: (date) => setState(() => _selectedDate = date),
+            );
+          }),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                MoneyScreen(selectedDate: _selectedDate),
+                BorrowScreen(selectedDate: _selectedDate),
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
