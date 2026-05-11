@@ -121,7 +121,7 @@ class BorrowScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 14,
                       backgroundColor: AppColors.success.withOpacity(0.1),
-                      child: Icon(Icons.move_to_inbox_rounded, size: 16, color: AppColors.success),
+                      child: const Icon(Icons.move_to_inbox_rounded, size: 16, color: AppColors.success),
                     ),
                     const SizedBox(width: 8),
                     const Text(
@@ -300,7 +300,7 @@ class _ItemCard extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text(
                               item.iLent ? 'Lent to someone' : 'Borrowed from someone',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w500,

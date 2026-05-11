@@ -79,10 +79,10 @@ class MoneyScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 14,
                       backgroundColor: AppColors.overdueText.withOpacity(0.1),
-                      child: Icon(Icons.arrow_upward_rounded, size: 16, color: AppColors.overdueText),
+                      child: const Icon(Icons.arrow_upward_rounded, size: 16, color: AppColors.overdueText),
                     ),
                     const SizedBox(width: 8),
-                    Text(
+                    const Text(
                       'I Owe',
                       style: TextStyle(
                         fontSize: 14,
@@ -121,10 +121,10 @@ class MoneyScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 14,
                       backgroundColor: AppColors.pendingText.withOpacity(0.1),
-                      child: Icon(Icons.arrow_downward_rounded, size: 16, color: AppColors.pendingText),
+                      child: const Icon(Icons.arrow_downward_rounded, size: 16, color: AppColors.pendingText),
                     ),
                     const SizedBox(width: 8),
-                    Text(
+                    const Text(
                       'Owed to Me',
                       style: TextStyle(
                         fontSize: 14,
@@ -300,7 +300,7 @@ class _RecordCard extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text(
                               record.description ?? 'No description',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w500,

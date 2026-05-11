@@ -124,22 +124,22 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildActivityMock(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
-        const _ActivityItem(
+        _ActivityItem(
           title: 'Return "Design Systems" book',
           subtitle: 'Due Tomorrow',
           icon: Icons.book_outlined,
           color: AppColors.pendingText,
           bgColor: AppColors.pendingBg,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _ActivityItem(
           title: 'Buy coffee for the team',
           subtitle: 'Completed',
           icon: Icons.local_cafe_outlined,
-          color: const Color(0xFF9C27B0),
-          bgColor: const Color(0xFFF3E5F5),
+          color: Color(0xFF9C27B0),
+          bgColor: Color(0xFFF3E5F5),
         ),
       ],
     );
@@ -262,11 +262,11 @@ class _ActivityItem extends StatelessWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                              const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
                               const SizedBox(width: 4),
                               Text(
                                 subtitle,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w500,

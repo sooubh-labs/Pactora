@@ -288,7 +288,7 @@ class _PromiseCard extends ConsumerWidget {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                                const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
