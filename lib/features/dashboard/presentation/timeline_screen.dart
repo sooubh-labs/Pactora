@@ -107,7 +107,7 @@ class _TimelineItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.1),
+          backgroundColor: color.withOpacity(0.1),
           child: Icon(icon, color: color, size: 20),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),

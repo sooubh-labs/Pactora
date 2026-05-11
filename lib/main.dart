@@ -8,9 +8,13 @@ import 'app/router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize services
-  await IsarService.init();
-  await NotificationService.init();
+  try {
+    // Initialize services
+    await IsarService.init();
+    await NotificationService.init();
+  } catch (e) {
+    debugPrint('Error during initialization: $e');
+  }
 
   runApp(
     const ProviderScope(

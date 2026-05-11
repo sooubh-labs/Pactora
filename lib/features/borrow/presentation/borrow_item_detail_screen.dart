@@ -205,7 +205,7 @@ class _StatusBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      color: color.withValues(alpha: 0.1),
+      color: color.withOpacity(0.1),
       child: Center(
         child: Text(
           label,
@@ -240,7 +240,7 @@ class _DetailItem extends StatelessWidget {
         if (icon != null)
           CircleAvatar(
             radius: 16,
-            backgroundColor: (color ?? Colors.grey).withValues(alpha: 0.1),
+            backgroundColor: (color ?? Colors.grey).withOpacity(0.1),
             child: Icon(icon, size: 16, color: color),
           )
         else if (widget != null)

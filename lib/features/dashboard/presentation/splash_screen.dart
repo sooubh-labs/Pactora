@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.primary,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Never forget a promise.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Colors.white.withOpacity(0.7),
                 fontSize: 16,
               ),
             ),

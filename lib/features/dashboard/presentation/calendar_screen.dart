@@ -62,7 +62,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                color: Theme.of(context).primaryColor.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
               selectedDecoration: BoxDecoration(

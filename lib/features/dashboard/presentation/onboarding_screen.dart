@@ -70,7 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _currentPage == index ? Theme.of(context).primaryColor : Colors.grey.shade300,
+                          color: _currentPage == index ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
                         ),
                       ),
                     ),
@@ -119,7 +119,7 @@ class _OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(data.icon, size: 100, color: Theme.of(context).primaryColor),
+          Icon(data.icon, size: 100, color: Theme.of(context).colorScheme.primary),
           const Gap(48),
           Text(
             data.title,
