@@ -979,7 +979,7 @@ Most commitments with:
 ### Process
 ```
 1. BackupService.exportToJson()
-2. Write to temp file: commitly_backup_TIMESTAMP.json
+2. Write to temp file: pactora_backup_TIMESTAMP.json
 3. share_plus or FileSaver
 4. Update last backup timestamp
 ```
