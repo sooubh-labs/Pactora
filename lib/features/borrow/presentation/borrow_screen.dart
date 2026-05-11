@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../domain/item_model.dart';
@@ -23,17 +21,133 @@ class BorrowScreen extends ConsumerWidget {
           ? allItems 
           : allItems.where((i) => i.expectedReturn != null && isSameDay(i.expectedReturn, selectedDate)).toList();
 
-        return TabBarView(
-          children: [
-            _ItemList(items: items),
-            _ItemList(items: items.where((i) => i.status == ItemStatus.active).toList()),
-            _ItemList(items: items.where((i) => i.status == ItemStatus.overdue).toList()),
-            _ItemList(items: items.where((i) => i.status == ItemStatus.returned).toList()),
-          ],
+        final lentItems = items.where((i) => i.iLent && i.status == ItemStatus.active).length;
+        final borrowedItems = items.where((i) => !i.iLent && i.status == ItemStatus.active).length;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSummaryCards(lentItems, borrowedItems),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Recent Activity',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                    child: const Text('View All', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _ItemList(items: items),
+              const SizedBox(height: 100), // padding for floating nav
+            ],
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildSummaryCards(int lentItems, int borrowedItems) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFCE4EC), // Very light pink
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: const Color(0xFFD81B60).withOpacity(0.1),
+                      child: const Icon(Icons.outbox_rounded, size: 16, color: Color(0xFFD81B60)),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'I Lent',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '$lentItems',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5E9), // Very light green
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: AppColors.success.withOpacity(0.1),
+                      child: Icon(Icons.move_to_inbox_rounded, size: 16, color: AppColors.success),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'I Borrowed',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '$borrowedItems',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -47,25 +161,25 @@ class _ItemList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            Text('No items found', style: Theme.of(context).textTheme.bodyMedium),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+              const SizedBox(height: 16),
+              Text('No items found', style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
         ),
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return _ItemCard(item: item);
-      },
+    return Column(
+      children: items.map((item) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _ItemCard(item: item),
+      )).toList(),
     );
   }
 }
@@ -78,7 +192,17 @@ class _ItemCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOverdue = item.expectedReturn != null && item.expectedReturn!.isBefore(DateTime.now()) && item.status == ItemStatus.active;
-    final color = item.iLent ? AppColors.borrow : AppColors.info;
+    
+    // Determine card accent and background based on status
+    Color accentColor = AppColors.pendingText; // Blue default
+    Color iconBgColor = AppColors.pendingBg;
+    if (item.status == ItemStatus.returned) {
+      accentColor = AppColors.doneText;
+      iconBgColor = AppColors.doneBg;
+    } else if (isOverdue) {
+      accentColor = AppColors.overdueText;
+      iconBgColor = AppColors.overdueBg;
+    }
 
     return Slidable(
       endActionPane: ActionPane(
@@ -91,6 +215,7 @@ class _ItemCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.error.withOpacity(0.1),
             foregroundColor: AppColors.error,
+            borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.delete_outline_rounded),
           ),
         ],
@@ -106,6 +231,7 @@ class _ItemCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.success.withOpacity(0.1),
             foregroundColor: AppColors.success,
+            borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.check_rounded),
           ),
         ],
@@ -113,65 +239,92 @@ class _ItemCard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
+              color: AppColors.primary.withOpacity(0.03),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              item.iLent ? Icons.outbox_rounded : Icons.move_to_inbox_rounded,
-              color: color,
-              size: 24,
-            ),
-          ),
-          title: Text(
-            item.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                item.iLent ? 'I Lent' : 'I Borrowed',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
+              // Left Accent Border
+              Container(
+                width: 6,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    bottomLeft: Radius.circular(32),
+                  ),
+                ),
               ),
-              if (item.expectedReturn != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   child: Row(
                     children: [
-                      Icon(Icons.event_rounded, size: 14, color: isOverdue ? AppColors.overdue : AppColors.textTertiary),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat('MMM dd, yyyy').format(item.expectedReturn!),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: isOverdue ? AppColors.overdue : AppColors.textTertiary,
+                      // Avatar mock (initials)
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: iconBgColor,
+                        child: Text(
+                          'SJ', // Mock initials
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
                         ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              item.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.iLent ? 'Lent to someone' : 'Borrowed from someone',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _StatusChip(status: item.status, isOverdue: isOverdue),
+                        ],
                       ),
                     ],
                   ),
                 ),
+              ),
             ],
           ),
-          trailing: _StatusChip(status: item.status, isOverdue: isOverdue),
-          onTap: () => context.push('/borrow/${item.id}'),
         ),
       ),
     );
@@ -186,19 +339,24 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = AppColors.textTertiary;
+    Color textColor = AppColors.pendingText;
+    Color bgColor = AppColors.pendingBg;
     String label = status.name.toUpperCase();
 
     if (isOverdue) {
-      color = AppColors.overdue;
+      textColor = AppColors.overdueText;
+      bgColor = AppColors.overdueBg;
       label = 'OVERDUE';
     } else {
       switch (status) {
         case ItemStatus.active:
-          color = AppColors.active;
+          textColor = AppColors.pendingText;
+          bgColor = AppColors.pendingBg;
+          label = 'ACTIVE';
           break;
         case ItemStatus.returned:
-          color = AppColors.complete;
+          textColor = AppColors.doneText;
+          bgColor = AppColors.doneBg;
           label = 'RETURNED';
           break;
         default:
@@ -209,14 +367,14 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color, 
-          fontSize: 10, 
+          color: textColor, 
+          fontSize: 9, 
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
         ),

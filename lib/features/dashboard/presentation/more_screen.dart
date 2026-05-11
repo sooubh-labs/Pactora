@@ -9,116 +9,141 @@ class MoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('More'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        children: [
-          _buildProfileHeader(context),
-          const SizedBox(height: 24),
-          Text(
-            'GENERAL',
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-          const SizedBox(height: 12),
-          _buildMenuTile(
-            context,
-            icon: Icons.people_outline_rounded,
-            title: 'People',
-            color: AppColors.primaryLight,
-            onTap: () => context.push('/people'),
-          ),
-          _buildMenuTile(
-            context,
-            icon: Icons.calendar_month_rounded,
-            title: 'Calendar',
-            color: AppColors.task,
-            onTap: () => context.push('/calendar'),
-          ),
-          _buildMenuTile(
-            context,
-            icon: Icons.analytics_outlined,
-            title: 'Reports & Stats',
-            color: AppColors.money,
-            onTap: () => context.push('/stats'),
-          ),
-          _buildMenuTile(
-            context,
-            icon: Icons.history_rounded,
-            title: 'Activity Log',
-            color: AppColors.meeting,
-            onTap: () => context.push('/timeline'),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'SYSTEM',
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-          const SizedBox(height: 12),
-          _buildMenuTile(
-            context,
-            icon: Icons.archive_outlined,
-            title: 'Archive',
-            color: AppColors.textTertiary,
-            onTap: () => context.push('/archive'),
-          ),
-          _buildMenuTile(
-            context,
-            icon: Icons.settings_outlined,
-            title: 'Settings',
-            color: AppColors.textSecondary,
-            onTap: () => context.push('/settings'),
-          ),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          children: [
+            _buildProfileHeader(context),
+            const SizedBox(height: 32),
+            _buildMenuGroup([
+              _MenuData(
+                icon: Icons.people_alt_outlined,
+                title: 'People',
+                color: AppColors.primaryLight,
+                bgColor: AppColors.primaryLight.withOpacity(0.1),
+                onTap: () => context.push('/people'),
+              ),
+              _MenuData(
+                icon: Icons.calendar_today_outlined,
+                title: 'Calendar',
+                color: const Color(0xFFD81B60),
+                bgColor: const Color(0xFFFCE4EC),
+                onTap: () => context.push('/calendar'),
+              ),
+            ]),
+            const SizedBox(height: 24),
+            _buildMenuGroup([
+              _MenuData(
+                icon: Icons.bar_chart_rounded,
+                title: 'Reports & Stats',
+                color: const Color(0xFF3949AB),
+                bgColor: const Color(0xFFEDE7F6),
+                onTap: () => context.push('/stats'),
+              ),
+              _MenuData(
+                icon: Icons.history_rounded,
+                title: 'Activity Log',
+                color: AppColors.info,
+                bgColor: AppColors.info.withOpacity(0.1),
+                onTap: () => context.push('/timeline'),
+              ),
+              _MenuData(
+                icon: Icons.archive_outlined,
+                title: 'Archive',
+                color: AppColors.textSecondary,
+                bgColor: AppColors.textSecondary.withOpacity(0.1),
+                onTap: () => context.push('/archive'),
+              ),
+            ]),
+            const SizedBox(height: 24),
+            _buildMenuGroup([
+              _MenuData(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                color: AppColors.textSecondary,
+                bgColor: AppColors.textSecondary.withOpacity(0.1),
+                onTap: () => context.push('/settings'),
+              ),
+            ]),
+            const SizedBox(height: 100), // padding for floating nav
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMenuTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildMenuGroup(List<_MenuData> items) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withOpacity(0.04)),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-        ),
-        trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary.withOpacity(0.5)),
+        ],
+      ),
+      child: Column(
+        children: items.asMap().entries.map((entry) {
+          final int index = entry.key;
+          final _MenuData data = entry.value;
+          
+          return Column(
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                onTap: data.onTap,
+                leading: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: data.bgColor,
+                  child: Icon(data.icon, color: data.color, size: 20),
+                ),
+                title: Text(
+                  data.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500, 
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary.withOpacity(0.5)),
+              ),
+              if (index < items.length - 1)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 24,
+                  endIndent: 24,
+                  color: AppColors.border.withOpacity(0.5),
+                ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
 
   Widget _buildProfileHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.primaryLight.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -126,14 +151,15 @@ class MoreScreen extends ConsumerWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight.withOpacity(0.5),
               shape: BoxShape.circle,
             ),
             child: const CircleAvatar(
-              radius: 28,
+              radius: 32,
               backgroundColor: AppColors.primaryLight,
-              child: Icon(Icons.person_rounded, size: 32, color: Colors.white),
+              child: Icon(Icons.person_rounded, size: 36, color: Colors.white),
+              // backgroundImage: AssetImage('assets/images/avatar.png'),
             ),
           ),
           const SizedBox(width: 16),
@@ -142,18 +168,20 @@ class MoreScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'User Profile',
+                  'User Name', // In design it's "Alex Mercer"
                   style: TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  'Manage your account',
+                  'user@example.com',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 13,
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -161,14 +189,31 @@ class MoreScreen extends ConsumerWidget {
           ),
           IconButton(
             onPressed: () => context.push('/profile'),
-            icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: Colors.white.withOpacity(0.15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.all(12),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _MenuData {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final Color bgColor;
+  final VoidCallback onTap;
+
+  _MenuData({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.bgColor,
+    required this.onTap,
+  });
 }

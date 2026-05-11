@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../domain/money_model.dart';
@@ -22,17 +21,133 @@ class MoneyScreen extends ConsumerWidget {
           ? allRecords 
           : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, selectedDate)).toList();
 
-        return TabBarView(
-          children: [
-            _RecordList(records: records),
-            _RecordList(records: records.where((r) => r.iOwe && r.status != MoneyStatus.paid).toList()),
-            _RecordList(records: records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).toList()),
-            _RecordList(records: records.where((r) => r.status == MoneyStatus.paid).toList()),
-          ],
+        final owedToMe = records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).fold(0.0, (sum, r) => sum + r.amount);
+        final iOwe = records.where((r) => r.iOwe && r.status != MoneyStatus.paid).fold(0.0, (sum, r) => sum + r.amount);
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSummaryCards(owedToMe, iOwe),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Recent Activity',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                    child: const Text('View All', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _RecordList(records: records),
+              const SizedBox(height: 100), // padding for floating nav
+            ],
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text('Error: $err')),
+    );
+  }
+
+  Widget _buildSummaryCards(double owedToMe, double iOwe) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF0F0), // Very light red
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: AppColors.overdueText.withOpacity(0.1),
+                      child: Icon(Icons.arrow_upward_rounded, size: 16, color: AppColors.overdueText),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'I Owe',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '\$${iOwe.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF0FF), // Very light blue
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: AppColors.pendingText.withOpacity(0.1),
+                      child: Icon(Icons.arrow_downward_rounded, size: 16, color: AppColors.pendingText),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Owed to Me',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '\$${owedToMe.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -46,25 +161,25 @@ class _RecordList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (records.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.payments_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            Text('No money records found', style: Theme.of(context).textTheme.bodyMedium),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.payments_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+              const SizedBox(height: 16),
+              Text('No money records found', style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
         ),
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      itemCount: records.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final record = records[index];
-        return _RecordCard(record: record);
-      },
+    return Column(
+      children: records.map((record) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _RecordCard(record: record),
+      )).toList(),
     );
   }
 }
@@ -77,7 +192,17 @@ class _RecordCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOverdue = record.dueDate != null && record.dueDate!.isBefore(DateTime.now()) && record.status != MoneyStatus.paid;
-    final color = record.iOwe ? AppColors.error : AppColors.success;
+    
+    // Determine card accent and background based on status
+    Color accentColor = AppColors.pendingText; // Blue default
+    Color iconBgColor = AppColors.pendingBg;
+    if (record.status == MoneyStatus.paid) {
+      accentColor = AppColors.doneText;
+      iconBgColor = AppColors.doneBg;
+    } else if (isOverdue || record.iOwe) {
+      accentColor = AppColors.overdueText;
+      iconBgColor = AppColors.overdueBg;
+    }
 
     return Slidable(
       endActionPane: ActionPane(
@@ -90,6 +215,7 @@ class _RecordCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.error.withOpacity(0.1),
             foregroundColor: AppColors.error,
+            borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.delete_outline_rounded),
           ),
         ],
@@ -105,6 +231,7 @@ class _RecordCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.success.withOpacity(0.1),
             foregroundColor: AppColors.success,
+            borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.check_rounded),
           ),
         ],
@@ -112,60 +239,101 @@ class _RecordCard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
+              color: AppColors.primary.withOpacity(0.03),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              record.iOwe ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-              color: color,
-              size: 24,
-            ),
-          ),
-          title: Text(
-            '${record.currency} ${record.amount}',
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-              letterSpacing: -0.5,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                record.iOwe ? 'I Owe' : 'They Owe Me',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
-              ),
-              if (record.description != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    record.description!,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+              // Left Accent Border
+              Container(
+                width: 6,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    bottomLeft: Radius.circular(32),
                   ),
                 ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Row(
+                    children: [
+                      // Avatar mock (initials)
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: iconBgColor,
+                        child: Text(
+                          'MT', // Mock initials
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Mike Thompson', // Mock person name
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: record.status == MoneyStatus.paid ? AppColors.textSecondary : AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              record.description ?? 'No description',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${record.iOwe ? '-' : '+'}\$${record.amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          _StatusChip(status: record.status, isOverdue: isOverdue),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-          trailing: _StatusChip(status: record.status, isOverdue: isOverdue),
-          onTap: () => context.push('/money/${record.id}'),
         ),
       ),
     );
@@ -180,23 +348,28 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = AppColors.textTertiary;
+    Color textColor = AppColors.pendingText;
+    Color bgColor = AppColors.pendingBg;
     String label = status.name.toUpperCase();
 
     if (isOverdue) {
-      color = AppColors.overdue;
+      textColor = AppColors.overdueText;
+      bgColor = AppColors.overdueBg;
       label = 'OVERDUE';
     } else {
       switch (status) {
         case MoneyStatus.pending:
-          color = AppColors.pending;
+          textColor = AppColors.pendingText;
+          bgColor = AppColors.pendingBg;
           break;
         case MoneyStatus.paid:
-          color = AppColors.complete;
-          label = 'PAID';
+          textColor = AppColors.doneText;
+          bgColor = AppColors.doneBg;
+          label = 'SETTLED';
           break;
         case MoneyStatus.partial:
-          color = AppColors.info;
+          textColor = AppColors.primaryLight;
+          bgColor = AppColors.primaryLight.withOpacity(0.1);
           label = 'PARTIAL';
           break;
         default:
@@ -207,14 +380,14 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color, 
-          fontSize: 10, 
+          color: textColor, 
+          fontSize: 9, 
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
         ),

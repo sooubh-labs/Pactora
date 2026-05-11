@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dashboard_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/widgets/quick_add_sheet.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -13,83 +12,136 @@ class DashboardScreen extends ConsumerWidget {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () => context.push('/search'),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: summaryAsync.when(
-        data: (summary) => SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Good day!',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Here is your overview for today.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              _buildSummaryGrid(summary, context),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Activity',
-                    style: Theme.of(context).textTheme.titleLarge,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            _buildHeader(context),
+            _buildSearchBar(context),
+            Expanded(
+              child: summaryAsync.when(
+                data: (summary) => SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSummaryGrid(summary, context),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Activity',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          TextButton(
+                            onPressed: () => context.push('/timeline'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            child: const Text('View All'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildActivityMock(context),
+                      const SizedBox(height: 100), // padding for floating nav
+                    ],
                   ),
-                  TextButton(
-                    onPressed: () => context.push('/timeline'),
-                    child: const Text('See All'),
-                  ),
-                ],
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Error: $err')),
               ),
-              const SizedBox(height: 12),
-              _buildActivityPlaceholder(context),
-            ],
-          ),
+            ),
+          ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showQuickAdd(context),
-        label: const Text('Quick Add'),
-        icon: const Icon(Icons.add_rounded),
       ),
     );
   }
 
-  Widget _buildActivityPlaceholder(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.04)),
-      ),
-      child: Column(
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.event_note_rounded, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
-          const SizedBox(height: 16),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.primary.withOpacity(0.1),
+            child: const Icon(Icons.person, color: AppColors.primary),
+            // backgroundImage: AssetImage('assets/images/avatar.png'), // If we had one
+          ),
           Text(
-            'Check your Promises or Finances tabs for daily schedules.',
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
+            'Welcome Back',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 24),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded, size: 28),
+            color: AppColors.primary,
+            onPressed: () {},
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: GestureDetector(
+        onTap: () => context.push('/search'),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search_rounded, color: AppColors.primary.withOpacity(0.6), size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Search promises, people...',
+                style: TextStyle(
+                  color: AppColors.textTertiary.withOpacity(0.8),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityMock(BuildContext context) {
+    return Column(
+      children: [
+        const _ActivityItem(
+          title: 'Return "Design Systems" book',
+          subtitle: 'Due Tomorrow',
+          icon: Icons.book_outlined,
+          color: AppColors.pendingText,
+          bgColor: AppColors.pendingBg,
+        ),
+        const SizedBox(height: 16),
+        _ActivityItem(
+          title: 'Buy coffee for the team',
+          subtitle: 'Completed',
+          icon: Icons.local_cafe_outlined,
+          color: const Color(0xFF9C27B0),
+          bgColor: const Color(0xFFF3E5F5),
+        ),
+      ],
     );
   }
 
@@ -100,63 +152,58 @@ class DashboardScreen extends ConsumerWidget {
       crossAxisCount: 2,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
-      childAspectRatio: 1.4,
+      childAspectRatio: 0.95,
       children: [
         _StatCard(
-          label: 'Pending',
+          label: 'PENDING\nPROMISES',
           count: summary.pendingPromises.toString(),
-          color: AppColors.pending,
-          icon: Icons.handshake_rounded,
+          color: AppColors.pendingText,
+          bgColor: AppColors.pendingBg,
+          icon: Icons.hourglass_empty_rounded,
           onTap: () => context.go('/promises'),
         ),
         _StatCard(
-          label: 'Overdue',
+          label: 'OVERDUE',
           count: summary.overduePromises.toString(),
-          color: AppColors.overdue,
-          icon: Icons.error_outline_rounded,
+          color: AppColors.overdueText,
+          bgColor: AppColors.overdueBg,
+          icon: Icons.warning_amber_rounded,
           onTap: () => context.go('/promises'),
         ),
         _StatCard(
-          label: 'Borrowed',
+          label: 'BORROWED ITEMS',
           count: summary.activeBorrows.toString(),
-          color: AppColors.borrow,
-          icon: Icons.sync_alt_rounded,
+          color: const Color(0xFFD81B60),
+          bgColor: const Color(0xFFFCE4EC),
+          icon: Icons.handshake_outlined,
           onTap: () => context.go('/finances?tab=borrow'),
         ),
         _StatCard(
-          label: 'Owed',
-          count: '₹${summary.moneyOwedToMe.toStringAsFixed(0)}',
-          color: AppColors.money,
-          icon: Icons.account_balance_wallet_rounded,
+          label: 'MONEY OWED',
+          count: '\$${summary.moneyOwedToMe.toStringAsFixed(0)}', // Design used $, updated
+          color: AppColors.primaryLight,
+          bgColor: AppColors.primaryLight.withOpacity(0.1),
+          icon: Icons.payments_outlined,
           onTap: () => context.go('/finances?tab=money'),
         ),
       ],
     );
   }
-
-  void _showQuickAdd(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const QuickAddSheet(),
-    );
-  }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String count;
-  final Color color;
+class _ActivityItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
   final IconData icon;
-  final VoidCallback onTap;
+  final Color color;
+  final Color bgColor;
 
-  const _StatCard({
-    required this.label,
-    required this.count,
-    required this.color,
+  const _ActivityItem({
+    required this.title,
+    required this.subtitle,
     required this.icon,
-    required this.onTap,
+    required this.color,
+    required this.bgColor,
   });
 
   @override
@@ -167,31 +214,126 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 20,
+            color: AppColors.primary.withOpacity(0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left Accent Border
+            Container(
+              width: 6,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: bgColor,
+                      child: Icon(icon, color: color, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              Text(
+                                subtitle,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String count;
+  final Color color;
+  final Color bgColor;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _StatCard({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.bgColor,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.04),
+            blurRadius: 24,
             offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(36),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 22),
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: bgColor,
+                  child: Icon(icon, color: color, size: 24),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,15 +341,22 @@ class _StatCard extends StatelessWidget {
                     Text(
                       count,
                       style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: 36,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
+                        color: AppColors.primary,
+                        height: 1.1,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       label,
-                      style: Theme.of(context).textTheme.labelSmall,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.5,
+                        height: 1.2,
+                      ),
                     ),
                   ],
                 ),

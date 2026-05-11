@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 import '../domain/promise_model.dart';
 import '../domain/promise_enums.dart';
 import 'promise_provider.dart';
-import '../../../core/constants/category_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/horizontal_calendar.dart';
 
@@ -19,26 +17,28 @@ class PromisesScreen extends ConsumerStatefulWidget {
 }
 
 class _PromisesScreenState extends ConsumerState<PromisesScreen> {
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
+  int _selectedFilterIndex = 0; // 0: All, 1: Pending, 2: Overdue, 3: Done
 
   @override
   Widget build(BuildContext context) {
     final promisesAsync = ref.watch(allPromisesProvider);
 
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Promises'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search_rounded),
-              onPressed: () => context.push('/search'),
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Promises'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             promisesAsync.when(
               data: (promises) => HorizontalCalendar(
@@ -51,57 +51,47 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
                   setState(() => _selectedDate = date);
                 },
               ),
-              loading: () => const SizedBox(height: 110),
-              error: (_, __) => const SizedBox(height: 110),
+              loading: () => const SizedBox(height: 120),
+              error: (_, __) => const SizedBox(height: 120),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Row(
-                children: [
-                  Text(
-                    DateFormat('MMMM d, yyyy').format(_selectedDate),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const Spacer(),
-                  const TabBar(
-                    isScrollable: true,
-                    dividerColor: Colors.transparent,
-                    indicatorPadding: EdgeInsets.zero,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 12),
-                    tabs: [
-                      Tab(text: 'All'),
-                      Tab(text: 'Pending'),
-                      Tab(text: 'Overdue'),
-                      Tab(text: 'Done'),
-                    ],
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Text(
+                _selectedDate == null 
+                    ? 'All Promises' 
+                    : DateFormat('MMMM d, yyyy').format(_selectedDate!),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
+            const SizedBox(height: 8),
+            _buildFilterPills(),
+            const SizedBox(height: 16),
             Expanded(
               child: promisesAsync.when(
                 data: (promises) {
-                  final filteredPromises = promises.where((p) =>
-                    p.dueDate != null && isSameDay(p.dueDate, _selectedDate)
-                  ).toList();
+                  final filteredPromises = _selectedDate == null 
+                    ? promises 
+                    : promises.where((p) =>
+                        p.dueDate != null && isSameDay(p.dueDate, _selectedDate)
+                      ).toList();
 
-                  return TabBarView(
-                    children: [
-                      _PromiseList(promises: filteredPromises),
-                      _PromiseList(
-                          promises: filteredPromises
-                              .where((p) => p.status == PromiseStatus.pending)
-                              .toList()),
-                      _PromiseList(
-                          promises: filteredPromises
-                              .where((p) => p.status == PromiseStatus.overdue)
-                              .toList()),
-                      _PromiseList(
-                          promises: filteredPromises
-                              .where((p) => p.status == PromiseStatus.completed)
-                              .toList()),
-                    ],
-                  );
+                  List<Promise> finalPromises;
+                  switch (_selectedFilterIndex) {
+                    case 1:
+                      finalPromises = filteredPromises.where((p) => p.status == PromiseStatus.pending).toList();
+                      break;
+                    case 2:
+                      finalPromises = filteredPromises.where((p) => p.status == PromiseStatus.overdue).toList();
+                      break;
+                    case 3:
+                      finalPromises = filteredPromises.where((p) => p.status == PromiseStatus.completed).toList();
+                      break;
+                    case 0:
+                    default:
+                      finalPromises = filteredPromises;
+                  }
+
+                  return _PromiseList(promises: finalPromises);
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Center(child: Text('Error: $err')),
@@ -109,10 +99,49 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/promises/add'),
-          child: const Icon(Icons.add_rounded),
-        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterPills() {
+    final filters = ['All', 'Pending', 'Overdue', 'Done'];
+    
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: filters.asMap().entries.map((entry) {
+          final isSelected = _selectedFilterIndex == entry.key;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedFilterIndex = entry.key),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  entry.value,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -132,14 +161,14 @@ class _PromiseList extends ConsumerWidget {
           children: [
             Icon(Icons.event_busy_rounded, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
             const SizedBox(height: 16),
-            Text('No promises for this date', style: Theme.of(context).textTheme.bodyMedium),
+            Text('No promises found', style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 100), // Bottom padding for floating nav
       itemCount: promises.length,
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
@@ -157,8 +186,18 @@ class _PromiseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final config = CategoryConstants.categories[promise.category]!;
     final isOverdue = promise.dueDate != null && promise.dueDate!.isBefore(DateTime.now()) && promise.status == PromiseStatus.pending;
+    
+    // Determine card accent and background based on status
+    Color accentColor = AppColors.pendingText; // Blue default
+    Color iconBgColor = AppColors.pendingBg;
+    if (promise.status == PromiseStatus.completed) {
+      accentColor = AppColors.doneText;
+      iconBgColor = AppColors.doneBg;
+    } else if (isOverdue) {
+      accentColor = AppColors.overdueText;
+      iconBgColor = AppColors.overdueBg;
+    }
 
     return Slidable(
       endActionPane: ActionPane(
@@ -171,6 +210,7 @@ class _PromiseCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.error.withOpacity(0.1),
             foregroundColor: AppColors.error,
+            borderRadius: BorderRadius.circular(24),
             child: const Icon(Icons.delete_outline_rounded),
           ),
         ],
@@ -185,6 +225,7 @@ class _PromiseCard extends ConsumerWidget {
             },
             backgroundColor: AppColors.success.withOpacity(0.1),
             foregroundColor: AppColors.success,
+            borderRadius: BorderRadius.circular(24),
             child: const Icon(Icons.check_rounded),
           ),
         ],
@@ -192,52 +233,88 @@ class _PromiseCard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
+              color: AppColors.primary.withOpacity(0.04),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: config.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(config.icon, color: config.color, size: 24),
-          ),
-          title: Text(
-            promise.title,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
-              color: promise.status == PromiseStatus.completed ? AppColors.textTertiary : AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Row(
-              children: [
-                Icon(Icons.access_time_rounded, size: 14, color: isOverdue ? AppColors.overdue : AppColors.textTertiary),
-                const SizedBox(width: 4),
-                Text(
-                  DateFormat('h:mm a').format(promise.dueDate!),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: isOverdue ? AppColors.overdue : AppColors.textTertiary,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Left Accent Border
+              Container(
+                width: 6,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    bottomLeft: Radius.circular(32),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Row(
+                    children: [
+                      // Avatar mock (if person ID was resolved, but we use initials or generic avatar here for simplicity to match design)
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: iconBgColor,
+                        child: Icon(Icons.person, color: accentColor, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              promise.title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
+                                decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
+                                      fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusChip(status: promise.status, isOverdue: isOverdue),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          trailing: _StatusChip(status: promise.status, isOverdue: isOverdue),
-          onTap: () => context.push('/promises/${promise.id}'),
         ),
       ),
     );
@@ -252,19 +329,23 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = AppColors.textTertiary;
+    Color textColor = AppColors.pendingText;
+    Color bgColor = AppColors.pendingBg;
     String label = status.name.toUpperCase();
 
     if (isOverdue) {
-      color = AppColors.overdue;
+      textColor = AppColors.overdueText;
+      bgColor = AppColors.overdueBg;
       label = 'OVERDUE';
     } else {
       switch (status) {
         case PromiseStatus.pending:
-          color = AppColors.pending;
+          textColor = AppColors.pendingText;
+          bgColor = AppColors.pendingBg;
           break;
         case PromiseStatus.completed:
-          color = AppColors.complete;
+          textColor = AppColors.doneText;
+          bgColor = AppColors.doneBg;
           label = 'DONE';
           break;
         default:
@@ -273,15 +354,15 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color, 
+          color: textColor, 
           fontSize: 10, 
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,

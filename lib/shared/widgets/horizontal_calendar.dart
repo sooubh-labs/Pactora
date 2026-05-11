@@ -5,7 +5,7 @@ import '../../core/theme/app_colors.dart';
 
 class HorizontalCalendar extends StatefulWidget {
   final List<DateTime> activeDates;
-  final ValueChanged<DateTime> onDateSelected;
+  final ValueChanged<DateTime?> onDateSelected;
   final DateTime? initialDate;
 
   const HorizontalCalendar({
@@ -20,7 +20,7 @@ class HorizontalCalendar extends StatefulWidget {
 }
 
 class _HorizontalCalendarState extends State<HorizontalCalendar> {
-  late DateTime _selectedDate;
+  DateTime? _selectedDate;
   late ScrollController _scrollController;
   final List<DateTime> _dates = [];
   late Set<String> _normalizedActiveDates;
@@ -31,14 +31,15 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = _normalize(widget.initialDate ?? DateTime.now());
+    _selectedDate = widget.initialDate != null ? _normalize(widget.initialDate!) : null;
     _generateDates();
     _updateNormalizedDates();
     
-    // Initial scroll position to the selected date
-    final initialIndex = _dates.indexWhere((d) => isSameDay(d, _selectedDate));
+    // Initial scroll position to the selected date or today
+    final targetDate = _selectedDate ?? _normalize(DateTime.now());
+    final initialIndex = _dates.indexWhere((d) => isSameDay(d, targetDate));
     _scrollController = ScrollController(
-      initialScrollOffset: initialIndex >= 0 ? (initialIndex * 68.0) - 20 : 0,
+      initialScrollOffset: initialIndex >= 0 ? (initialIndex * 76.0) - 20 : 0,
     );
   }
 
@@ -48,11 +49,11 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
     if (widget.activeDates != oldWidget.activeDates) {
       _updateNormalizedDates();
     }
-    if (widget.initialDate != null && !isSameDay(widget.initialDate, _selectedDate)) {
+    if (widget.initialDate != oldWidget.initialDate) {
       setState(() {
-        _selectedDate = _normalize(widget.initialDate!);
+        _selectedDate = widget.initialDate != null ? _normalize(widget.initialDate!) : null;
       });
-      _scrollToSelected();
+      _scrollToSelectedOrToday();
     }
   }
 
@@ -81,11 +82,12 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
     return _normalizedActiveDates.contains(DateFormat('yyyy-MM-dd').format(date));
   }
 
-  void _scrollToSelected() {
-    final index = _dates.indexWhere((d) => isSameDay(d, _selectedDate));
+  void _scrollToSelectedOrToday() {
+    final targetDate = _selectedDate ?? _normalize(DateTime.now());
+    final index = _dates.indexWhere((d) => isSameDay(d, targetDate));
     if (index >= 0 && _scrollController.hasClients) {
       _scrollController.animateTo(
-        (index * 68.0) - 150, // Center it roughly
+        (index * 76.0) - 150, // Center it roughly
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -95,49 +97,44 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 110,
+      height: 120,
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         itemCount: _dates.length,
         itemBuilder: (context, index) {
           final date = _dates[index];
-          final isSelected = isSameDay(date, _selectedDate);
+          final isSelected = _selectedDate != null && isSameDay(date, _selectedDate!);
           final hasActivity = _hasActivity(date);
-          final isToday = isSameDay(date, DateTime.now());
 
           return Padding(
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               onTap: () {
-                setState(() => _selectedDate = _normalize(date));
+                setState(() {
+                  if (isSelected) {
+                    _selectedDate = null;
+                  } else {
+                    _selectedDate = _normalize(date);
+                  }
+                });
                 widget.onDateSelected(_selectedDate);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 56,
+                width: 64,
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: isSelected ? [
+                  borderRadius: BorderRadius.circular(32), // Tall pill shape
+                  boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 12,
+                      color: isSelected ? AppColors.primary.withOpacity(0.3) : AppColors.primary.withOpacity(0.04),
+                      blurRadius: isSelected ? 16 : 8,
                       offset: const Offset(0, 4),
                     )
-                  ] : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
                   ],
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : (isToday ? AppColors.primary.withOpacity(0.3) : Colors.transparent),
-                    width: 1.5,
-                  ),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -145,23 +142,23 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                     Text(
                       DateFormat('E').format(date).toUpperCase(),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         letterSpacing: 0.5,
                         color: isSelected ? Colors.white.withOpacity(0.8) : AppColors.textTertiary,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
                       DateFormat('d').format(date),
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: isSelected ? Colors.white : AppColors.textPrimary,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     if (hasActivity)
                       Container(
                         width: 4,
