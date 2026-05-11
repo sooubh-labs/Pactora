@@ -10,6 +10,8 @@ import '../features/dashboard/presentation/calendar_screen.dart';
 import '../features/dashboard/presentation/timeline_screen.dart';
 import '../features/dashboard/presentation/stats_screen.dart';
 import '../features/dashboard/presentation/archive_screen.dart';
+import '../features/dashboard/presentation/more_screen.dart';
+import '../features/dashboard/presentation/profile_screen.dart';
 import '../features/finances/presentation/finances_screen.dart';
 import '../features/promises/presentation/promises_screen.dart';
 import '../features/promises/presentation/add_promise_screen.dart';
@@ -210,6 +212,14 @@ final router = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/more',
+          builder: (context, state) => const MoreScreen(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
     ),

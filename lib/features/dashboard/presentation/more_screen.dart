@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
 
-class MoreScreen extends StatelessWidget {
+class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('More'),
@@ -54,8 +56,8 @@ class MoreScreen extends StatelessWidget {
       contentPadding: const EdgeInsets.all(16),
       leading: CircleAvatar(
         radius: 30,
-        backgroundColor: Colors.grey.shade200,
-        child: const Icon(Icons.person, size: 40, color: Colors.grey),
+        backgroundColor: AppColors.primary.withOpacity(0.1),
+        child: const Icon(Icons.person, size: 40, color: AppColors.primary),
       ),
       title: const Text('User Profile', style: TextStyle(fontWeight: FontWeight.bold)),
       subtitle: const Text('View and edit profile'),

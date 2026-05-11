@@ -32,7 +32,7 @@ class MainShell extends StatelessWidget {
           NavigationDestination(icon: Icon(Icons.handshake_outlined), label: 'Promises'),
           NavigationDestination(icon: Icon(Icons.add_circle_outline), label: 'Add'),
           NavigationDestination(icon: Icon(Icons.account_balance_wallet_outlined), label: 'Finances'),
-          NavigationDestination(icon: Icon(Icons.people_outline), label: 'People'),
+          NavigationDestination(icon: Icon(Icons.more_horiz), label: 'More'),
         ],
       ),
     );
@@ -50,7 +50,14 @@ class MainShell extends StatelessWidget {
         location.startsWith('/borrow')) {
       return 3;
     }
-    if (location.startsWith('/people')) {
+    if (location.startsWith('/more') || 
+        location.startsWith('/people') ||
+        location.startsWith('/calendar') ||
+        location.startsWith('/timeline') ||
+        location.startsWith('/stats') ||
+        location.startsWith('/archive') ||
+        location.startsWith('/settings') ||
+        location.startsWith('/profile')) {
       return 4;
     }
     return 0;
@@ -68,7 +75,7 @@ class MainShell extends StatelessWidget {
         context.go('/finances');
         break;
       case 4:
-        context.go('/people');
+        context.go('/more');
         break;
     }
   }
