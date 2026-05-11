@@ -41,52 +41,86 @@ class _FinancesScreenState extends State<FinancesScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Finances'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Money'),
-            Tab(text: 'Borrow'),
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Finances'),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Money'),
+              Tab(text: 'Borrow'),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            Consumer(builder: (context, ref, _) {
+              final moneyAsync = ref.watch(allMoneyRecordsProvider);
+              final itemsAsync = ref.watch(allItemsProvider);
+              final activeDates = <DateTime>[
+                ...moneyAsync.value?.where((r) => r.dueDate != null).map((r) => r.dueDate!) ?? [],
+                ...itemsAsync.value?.where((i) => i.expectedReturn != null).map((i) => i.expectedReturn!) ?? [],
+              ];
+              return HorizontalCalendar(
+                activeDates: activeDates,
+                initialDate: _selectedDate,
+                onDateSelected: (date) => setState(() => _selectedDate = date),
+              );
+            }),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    DateFormat('MMMM d, yyyy').format(_selectedDate),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Spacer(),
+                  TabBar(
+                    isScrollable: true,
+                    dividerColor: Colors.transparent,
+                    indicatorPadding: EdgeInsets.zero,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    tabs: _tabController.index == 0 
+                      ? const [
+                          Tab(text: 'All'),
+                          Tab(text: 'I Owe'),
+                          Tab(text: 'Owed'),
+                          Tab(text: 'Paid'),
+                        ]
+                      : const [
+                          Tab(text: 'All'),
+                          Tab(text: 'Active'),
+                          Tab(text: 'Overdue'),
+                          Tab(text: 'Done'),
+                        ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  MoneyScreen(selectedDate: _selectedDate),
+                  BorrowScreen(selectedDate: _selectedDate),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          Consumer(builder: (context, ref, _) {
-            final moneyAsync = ref.watch(allMoneyRecordsProvider);
-            final itemsAsync = ref.watch(allItemsProvider);
-            final activeDates = <DateTime>[
-              ...moneyAsync.value?.where((r) => r.dueDate != null).map((r) => r.dueDate!) ?? [],
-              ...itemsAsync.value?.where((i) => i.expectedReturn != null).map((i) => i.expectedReturn!) ?? [],
-            ];
-            return HorizontalCalendar(
-              activeDates: activeDates,
-              initialDate: _selectedDate,
-              onDateSelected: (date) => setState(() => _selectedDate = date),
-            );
-          }),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                MoneyScreen(selectedDate: _selectedDate),
-                BorrowScreen(selectedDate: _selectedDate),
-              ],
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_tabController.index == 0) {
-            context.push('/money/add');
-          } else {
-            context.push('/borrow/add');
-          }
-        },
-        child: const Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (_tabController.index == 0) {
+              context.push('/money/add');
+            } else {
+              context.push('/borrow/add');
+            }
+          },
+          child: const Icon(Icons.add_rounded),
+        ),
       ),
     );
   }

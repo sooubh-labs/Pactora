@@ -17,35 +17,56 @@ class PeopleScreen extends ConsumerWidget {
         title: const Text('People'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search_rounded),
             onPressed: () => context.push('/search'),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: peopleAsync.when(
         data: (people) {
           if (people.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.people_outline, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text('No people yet'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.push('/people/add'),
-                    child: const Text('Add someone'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(40.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.people_outline_rounded, size: 64, color: AppColors.primaryLight),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'No people yet',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add your contacts to start tracking promises and records together.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: () => context.push('/people/add'),
+                      icon: const Icon(Icons.person_add_rounded),
+                      label: const Text('Add someone'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             itemCount: people.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final person = people[index];
               return _PersonCard(person: person);
@@ -57,7 +78,7 @@ class PeopleScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/people/add'),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.person_add_rounded),
       ),
     );
   }
@@ -70,13 +91,34 @@ class _PersonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.black.withOpacity(0.04)),
+      ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: PersonAvatar(name: person.name),
-        title: Text(person.name),
-        subtitle: person.phone != null ? Text(person.phone!) : null,
+        title: Text(
+          person.name,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        subtitle: person.phone != null 
+          ? Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(person.phone!, style: Theme.of(context).textTheme.bodyMedium),
+            ) 
+          : null,
         onTap: () => context.push('/people/${person.id}'),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary.withOpacity(0.5)),
       ),
     );
   }

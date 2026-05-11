@@ -1,0 +1,43 @@
+<h2>More Screen Approaches</h2>
+<p class="subtitle">How should we organize the new 'More' screen?</p>
+
+<div class="cards">
+  <div class="card" data-choice="grid" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #fff; border: 1px solid #eee; padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>People</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Archive</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Settings</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Profile</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Stats</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Timeline</small></div>
+        <div style="text-align: center; border: 1px dashed #ccc; padding: 5px;"><small>Calendar</small></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Visual Grid</h3>
+      <p>Clean grid of icons. Easy to scan and touch. Familiar if you've used dashboard apps before.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="list" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #fff; border: 1px solid #eee; padding: 15px;">
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>👤 Profile</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>👥 People</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>📊 Stats & Reports</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>🕒 Timeline</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>📅 Calendar</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>📦 Archive</small></div>
+      <div style="border-bottom: 1px solid #eee; padding: 5px;"><small>⚙️ Settings</small></div>
+    </div>
+    <div class="card-body">
+      <h3>List View</h3>
+      <p>Standard list with leading icons. Very readable and allows for descriptive labels/subtitles.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>My Recommendation</h3>
+  <p>I recommend the <strong>List View</strong>. It scales better if we add more items later and allows for a "Profile" header section at the top which can show a quick summary of the user's status.</p>
+</div>

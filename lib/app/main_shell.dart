@@ -14,26 +14,63 @@ class MainShell extends StatelessWidget {
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex > 4 ? 0 : currentIndex,
-        onDestinationSelected: (index) {
-          if (index == 2) {
-            showModalBottomSheet(
-              context: context,
-              backgroundColor: Colors.transparent,
-              builder: (_) => const QuickAddSheet(),
-            );
-            return;
-          }
-          _onItemTapped(index, context);
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.handshake_outlined), label: 'Promises'),
-          NavigationDestination(icon: Icon(Icons.add_circle_outline), label: 'Add'),
-          NavigationDestination(icon: Icon(Icons.account_balance_wallet_outlined), label: 'Finances'),
-          NavigationDestination(icon: Icon(Icons.more_horiz), label: 'More'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          height: 72,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          indicatorColor: AppColors.primary.withOpacity(0.1),
+          selectedIndex: currentIndex > 4 ? 0 : currentIndex,
+          onDestinationSelected: (index) {
+            if (index == 2) {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => const QuickAddSheet(),
+              );
+              return;
+            }
+            _onItemTapped(index, context);
+          },
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined, size: 24), 
+              selectedIcon: Icon(Icons.dashboard_rounded, size: 24, color: AppColors.primary),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.handshake_outlined, size: 24), 
+              selectedIcon: Icon(Icons.handshake_rounded, size: 24, color: AppColors.primary),
+              label: 'Promises',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.add_circle_outline, size: 32), 
+              selectedIcon: Icon(Icons.add_circle_rounded, size: 32, color: AppColors.primary),
+              label: 'Add',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.account_balance_wallet_outlined, size: 24), 
+              selectedIcon: Icon(Icons.account_balance_wallet_rounded, size: 24, color: AppColors.primary),
+              label: 'Finances',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.more_horiz_outlined, size: 24), 
+              selectedIcon: Icon(Icons.more_horiz_rounded, size: 24, color: AppColors.primary),
+              label: 'More',
+            ),
+          ],
+        ),
       ),
     );
   }

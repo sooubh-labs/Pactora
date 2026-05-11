@@ -1,0 +1,54 @@
+<h2>Design: Navigation Refactor</h2>
+<p class="subtitle">Cleaning up the Dashboard and Bottom Navigation</p>
+
+<div class="mockup">
+  <div class="mockup-header">Bottom Navigation Changes</div>
+  <div class="mockup-body">
+    <pre>
+[ Home ] [ Promises ] [ (+) Add ] [ Finances ] [ (···) More ]
+    </pre>
+    <p>The 'People' tab is moved into the 'More' menu.</p>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">More Screen (List View)</div>
+  <div class="mockup-body">
+    <div style="background: white; border: 1px solid #ddd; border-radius: 8px;">
+      <div style="padding: 20px; background: #f9f9f9; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+        <div style="width: 50px; height: 50px; background: #ddd; border-radius: 25px; margin-right: 15px;"></div>
+        <div>
+          <div style="font-weight: bold;">User Profile</div>
+          <div style="font-size: 12px; color: #666;">View and edit profile</div>
+        </div>
+      </div>
+      <div style="padding: 15px; border-bottom: 1px solid #eee;">👥 People</div>
+      <div style="padding: 15px; border-bottom: 1px solid #eee;">📅 Calendar</div>
+      <div style="padding: 15px; border-bottom: 1px solid #eee;">📊 Reports (Stats)</div>
+      <div style="padding: 15px; border-bottom: 1px solid #eee;">🕒 Activity (Timeline)</div>
+      <div style="padding: 15px; border-bottom: 1px solid #eee;">📦 Archive</div>
+      <div style="padding: 15px;">⚙️ Settings</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Impact on Dashboard</h3>
+  <p>I will remove the following buttons from the Dashboard AppBar to clean up the UI:</p>
+  <ul>
+    <li>Calendar</li>
+    <li>Stats</li>
+    <li>Timeline</li>
+    <li>Archive</li>
+    <li>Settings</li>
+  </ul>
+  <p>The Search button will remain on the Dashboard AppBar for quick access.</p>
+</div>
+
+<div class="section">
+  <h3>New Files</h3>
+  <ul>
+    <li><code>lib/features/dashboard/presentation/more_screen.dart</code></li>
+    <li><code>lib/features/dashboard/presentation/profile_screen.dart</code> (placeholder)</li>
+  </ul>
+</div>

@@ -30,20 +30,12 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Promises'),
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'All'),
-              Tab(text: 'Pending'),
-              Tab(text: 'Overdue'),
-              Tab(text: 'Completed'),
-            ],
-          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.search),
+              icon: const Icon(Icons.search_rounded),
               onPressed: () => context.push('/search'),
             ),
+            const SizedBox(width: 8),
           ],
         ),
         body: Column(
@@ -59,8 +51,32 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
                   setState(() => _selectedDate = date);
                 },
               ),
-              loading: () => const SizedBox(height: 90),
-              error: (_, __) => const SizedBox(height: 90),
+              loading: () => const SizedBox(height: 110),
+              error: (_, __) => const SizedBox(height: 110),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    DateFormat('MMMM d, yyyy').format(_selectedDate),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Spacer(),
+                  const TabBar(
+                    isScrollable: true,
+                    dividerColor: Colors.transparent,
+                    indicatorPadding: EdgeInsets.zero,
+                    labelPadding: EdgeInsets.symmetric(horizontal: 12),
+                    tabs: [
+                      Tab(text: 'All'),
+                      Tab(text: 'Pending'),
+                      Tab(text: 'Overdue'),
+                      Tab(text: 'Done'),
+                    ],
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: promisesAsync.when(
@@ -95,7 +111,7 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => context.push('/promises/add'),
-          child: const Icon(Icons.add),
+          child: const Icon(Icons.add_rounded),
         ),
       ),
     );
@@ -110,13 +126,22 @@ class _PromiseList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (promises.isEmpty) {
-      return const Center(child: Text('No promises found'));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy_rounded, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text('No promises for this date', style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+      );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       itemCount: promises.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final promise = promises[index];
         return _PromiseCard(promise: promise);
@@ -137,54 +162,79 @@ class _PromiseCard extends ConsumerWidget {
 
     return Slidable(
       endActionPane: ActionPane(
+        extentRatio: 0.25,
         motion: const ScrollMotion(),
         children: [
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(promiseRepositoryProvider).deletePromise(promise.id);
             },
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Delete',
+            backgroundColor: AppColors.error.withOpacity(0.1),
+            foregroundColor: AppColors.error,
+            child: const Icon(Icons.delete_outline_rounded),
           ),
         ],
       ),
       startActionPane: promise.status == PromiseStatus.pending ? ActionPane(
+        extentRatio: 0.25,
         motion: const ScrollMotion(),
         children: [
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(promiseRepositoryProvider).completePromise(promise);
             },
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            icon: Icons.check,
-            label: 'Complete',
+            backgroundColor: AppColors.success.withOpacity(0.1),
+            foregroundColor: AppColors.success,
+            child: const Icon(Icons.check_rounded),
           ),
         ],
       ) : null,
-      child: Card(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
+        ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: config.color.withValues(alpha: 0.2),
-            child: Icon(config.icon, color: config.color),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: config.color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(config.icon, color: config.color, size: 24),
           ),
           title: Text(
             promise.title,
             style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
               decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
+              color: promise.status == PromiseStatus.completed ? AppColors.textTertiary : AppColors.textPrimary,
             ),
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (promise.dueDate != null)
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              children: [
+                Icon(Icons.access_time_rounded, size: 14, color: isOverdue ? AppColors.overdue : AppColors.textTertiary),
+                const SizedBox(width: 4),
                 Text(
-                  'Due: ${DateFormat('MMM dd').format(promise.dueDate!)}',
-                  style: TextStyle(color: isOverdue ? AppColors.overdue : null),
+                  DateFormat('h:mm a').format(promise.dueDate!),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: isOverdue ? AppColors.overdue : AppColors.textTertiary,
+                  ),
                 ),
-            ],
+              ],
+            ),
           ),
           trailing: _StatusChip(status: promise.status, isOverdue: isOverdue),
           onTap: () => context.push('/promises/${promise.id}'),
@@ -202,7 +252,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = Colors.grey;
+    Color color = AppColors.textTertiary;
     String label = status.name.toUpperCase();
 
     if (isOverdue) {
@@ -215,6 +265,7 @@ class _StatusChip extends StatelessWidget {
           break;
         case PromiseStatus.completed:
           color = AppColors.complete;
+          label = 'DONE';
           break;
         default:
           break;
@@ -222,15 +273,19 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: color, 
+          fontSize: 10, 
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }

@@ -15,44 +15,48 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pactora'),
+        title: const Text('Dashboard'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search_rounded),
             onPressed: () => context.push('/search'),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: summaryAsync.when(
         data: (summary) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Gap(16),
+              Text(
+                'Good day!',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Here is your overview for today.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 24),
               _buildSummaryGrid(summary, context),
-              const Gap(32),
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Recent Activity', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Recent Activity',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   TextButton(
                     onPressed: () => context.push('/timeline'),
-                    child: const Text('View All'),
+                    child: const Text('See All'),
                   ),
                 ],
               ),
-              const Gap(8),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text('Check your Promises or Finances tabs for daily schedules.', 
-                    style: TextStyle(color: Colors.grey.shade500),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 12),
+              _buildActivityPlaceholder(context),
             ],
           ),
         ),
@@ -61,8 +65,31 @@ class DashboardScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showQuickAdd(context),
-        label: const Text('Add'),
-        icon: const Icon(Icons.add),
+        label: const Text('Quick Add'),
+        icon: const Icon(Icons.add_rounded),
+      ),
+    );
+  }
+
+  Widget _buildActivityPlaceholder(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.black.withOpacity(0.04)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.event_note_rounded, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+          const SizedBox(height: 16),
+          Text(
+            'Check your Promises or Finances tabs for daily schedules.',
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -72,36 +99,36 @@ class DashboardScreen extends ConsumerWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.6,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.4,
       children: [
         _StatCard(
           label: 'Pending',
           count: summary.pendingPromises.toString(),
           color: AppColors.pending,
-          icon: Icons.handshake_outlined,
+          icon: Icons.handshake_rounded,
           onTap: () => context.go('/promises'),
         ),
         _StatCard(
           label: 'Overdue',
           count: summary.overduePromises.toString(),
           color: AppColors.overdue,
-          icon: Icons.warning_amber_rounded,
+          icon: Icons.error_outline_rounded,
           onTap: () => context.go('/promises'),
         ),
         _StatCard(
           label: 'Borrowed',
           count: summary.activeBorrows.toString(),
           color: AppColors.borrow,
-          icon: Icons.swap_horiz,
+          icon: Icons.sync_alt_rounded,
           onTap: () => context.go('/finances?tab=borrow'),
         ),
         _StatCard(
           label: 'Owed',
           count: '₹${summary.moneyOwedToMe.toStringAsFixed(0)}',
           color: AppColors.money,
-          icon: Icons.currency_rupee,
+          icon: Icons.account_balance_wallet_rounded,
           onTap: () => context.go('/finances?tab=money'),
         ),
       ],
@@ -111,9 +138,8 @@ class DashboardScreen extends ConsumerWidget {
   void _showQuickAdd(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => const QuickAddSheet(),
     );
   }
@@ -139,38 +165,53 @@ class _StatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(icon, color: color, size: 24),
                     Text(
                       count,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
                 ),
-                const Gap(8),
-                Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w500)),
               ],
             ),
           ),

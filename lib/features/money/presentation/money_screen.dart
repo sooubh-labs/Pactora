@@ -17,41 +17,23 @@ class MoneyScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final recordsAsync = ref.watch(allMoneyRecordsProvider);
 
-    return DefaultTabController(
-      length: 4,
-      child: Column(
-        children: [
-          const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'All'),
-              Tab(text: 'I Owe'),
-              Tab(text: 'Owed to Me'),
-              Tab(text: 'Settled'),
-            ],
-          ),
-          Expanded(
-            child: recordsAsync.when(
-              data: (allRecords) {
-                final records = selectedDate == null 
-                  ? allRecords 
-                  : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, selectedDate)).toList();
+    return recordsAsync.when(
+      data: (allRecords) {
+        final records = selectedDate == null 
+          ? allRecords 
+          : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, selectedDate)).toList();
 
-                return TabBarView(
-                  children: [
-                    _RecordList(records: records),
-                    _RecordList(records: records.where((r) => r.iOwe && r.status != MoneyStatus.paid).toList()),
-                    _RecordList(records: records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).toList()),
-                    _RecordList(records: records.where((r) => r.status == MoneyStatus.paid).toList()),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error: $err')),
-            ),
-          ),
-        ],
-      ),
+        return TabBarView(
+          children: [
+            _RecordList(records: records),
+            _RecordList(records: records.where((r) => r.iOwe && r.status != MoneyStatus.paid).toList()),
+            _RecordList(records: records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).toList()),
+            _RecordList(records: records.where((r) => r.status == MoneyStatus.paid).toList()),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 }
@@ -64,13 +46,22 @@ class _RecordList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (records.isEmpty) {
-      return const Center(child: Text('No records found'));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.payments_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text('No money records found', style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+      );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       itemCount: records.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final record = records[index];
         return _RecordCard(record: record);
@@ -87,56 +78,90 @@ class _RecordCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOverdue = record.dueDate != null && record.dueDate!.isBefore(DateTime.now()) && record.status != MoneyStatus.paid;
+    final color = record.iOwe ? AppColors.error : AppColors.success;
 
     return Slidable(
       endActionPane: ActionPane(
+        extentRatio: 0.25,
         motion: const ScrollMotion(),
         children: [
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(moneyRepositoryProvider).deleteRecord(record.id);
             },
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Delete',
+            backgroundColor: AppColors.error.withOpacity(0.1),
+            foregroundColor: AppColors.error,
+            child: const Icon(Icons.delete_outline_rounded),
           ),
         ],
       ),
       startActionPane: record.status != MoneyStatus.paid ? ActionPane(
+        extentRatio: 0.25,
         motion: const ScrollMotion(),
         children: [
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (context) async {
               final updated = record..status = MoneyStatus.paid;
               await ref.read(moneyRepositoryProvider).saveRecord(updated);
             },
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            icon: Icons.check,
-            label: 'Settled',
+            backgroundColor: AppColors.success.withOpacity(0.1),
+            foregroundColor: AppColors.success,
+            child: const Icon(Icons.check_rounded),
           ),
         ],
       ) : null,
-      child: Card(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
+        ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: record.iOwe ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Icon(
-              record.iOwe ? Icons.trending_down : Icons.trending_up,
-              color: record.iOwe ? Colors.red : Colors.green,
+              record.iOwe ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              color: color,
+              size: 24,
             ),
           ),
-          title: Text('${record.currency} ${record.amount}'),
+          title: Text(
+            '${record.currency} ${record.amount}',
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              letterSpacing: -0.5,
+              color: AppColors.textPrimary,
+            ),
+          ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(record.iOwe ? 'I Owe' : 'They Owe Me'),
-              if (record.description != null) Text(record.description!),
-              if (record.dueDate != null)
-                Text(
-                  'Due: ${DateFormat('MMM dd').format(record.dueDate!)}',
-                  style: TextStyle(color: isOverdue ? AppColors.overdue : null),
+              Text(
+                record.iOwe ? 'I Owe' : 'They Owe Me',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
+              ),
+              if (record.description != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    record.description!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
             ],
           ),
@@ -156,7 +181,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = Colors.grey;
+    Color color = AppColors.textTertiary;
     String label = status.name.toUpperCase();
 
     if (isOverdue) {
@@ -169,9 +194,11 @@ class _StatusChip extends StatelessWidget {
           break;
         case MoneyStatus.paid:
           color = AppColors.complete;
+          label = 'PAID';
           break;
         case MoneyStatus.partial:
-          color = Colors.blue;
+          color = AppColors.info;
+          label = 'PARTIAL';
           break;
         default:
           break;
@@ -179,15 +206,19 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: color, 
+          fontSize: 10, 
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
