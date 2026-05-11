@@ -130,10 +130,10 @@ class MoreScreen extends ConsumerWidget {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: CircleAvatar(
+            child: const CircleAvatar(
               radius: 28,
               backgroundColor: AppColors.primaryLight,
-              child: const Icon(Icons.person_rounded, size: 32, color: Colors.white),
+              child: Icon(Icons.person_rounded, size: 32, color: Colors.white),
             ),
           ),
           const SizedBox(width: 16),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../../core/theme/app_colors.dart';
 
 class HorizontalCalendar extends StatefulWidget {
   final List<DateTime> activeDates;
