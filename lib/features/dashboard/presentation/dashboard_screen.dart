@@ -18,28 +18,8 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('Pactora'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () => context.push('/calendar'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            onPressed: () => context.push('/stats'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => context.push('/timeline'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.archive_outlined),
-            onPressed: () => context.push('/archive'),
-          ),
-          IconButton(
             icon: const Icon(Icons.search),
             onPressed: () => context.push('/search'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.push('/settings'),
           ),
         ],
       ),
