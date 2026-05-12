@@ -116,7 +116,7 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
                   finalPromises = List.from(finalPromises);
                   switch (_currentSort) {
                     case PromiseSortType.priority:
-                      finalPromises.sort((a, b) => b.priority.index.compareTo(a.priority.index)); // High (2) to Low (0)
+                      finalPromises.sort((a, b) => b.priority.index.compareTo(a.priority.index));
                       break;
                     case PromiseSortType.category:
                       finalPromises.sort((a, b) => a.category.name.compareTo(b.category.name));
@@ -208,12 +208,11 @@ class _PromiseList extends ConsumerWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 140), // Bottom padding for floating nav
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 140),
       itemCount: promises.length,
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        final promise = promises[index];
-        return _PromiseCard(promise: promise);
+        return _PromiseCard(promise: promises[index]);
       },
     );
   }
@@ -259,8 +258,7 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
     final promise = widget.promise;
     final isOverdue = promise.dueDate != null && promise.dueDate!.isBefore(DateTime.now()) && promise.status == PromiseStatus.pending;
     
-    // Determine card accent and background based on status
-    Color accentColor = AppColors.pendingText; // Blue default
+    Color accentColor = AppColors.pendingText;
     Color iconBgColor = AppColors.pendingBg;
     if (promise.status == PromiseStatus.completed) {
       accentColor = AppColors.doneText;
@@ -304,15 +302,16 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
       child: GestureDetector(
         onTap: () => context.push('/promises/${promise.id}'),
         onVerticalDragEnd: (details) {
-          if (details.primaryVelocity! > 100) {
+          if (details.primaryVelocity! > 500) {
             setState(() => _isExpanded = true);
-          } else if (details.primaryVelocity! < -100) {
+          } else if (details.primaryVelocity! < -500) {
             setState(() => _isExpanded = false);
           }
         },
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(32),
@@ -324,134 +323,192 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
               ),
             ],
           ),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-              // Left Accent Border
-              Container(
-                width: 6,
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    bottomLeft: Radius.circular(32),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          // Category Icon
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: iconBgColor,
-                            child: Icon(_getCategoryIcon(promise.category), color: accentColor, size: 24),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 6,
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          bottomLeft: Radius.circular(32),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: iconBgColor,
+                              child: Icon(_getCategoryIcon(promise.category), color: accentColor, size: 24),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          promise.title,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
+                                            decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      if (promise.status != PromiseStatus.completed)
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: _getPriorityColor(promise.priority),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
+                                            fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        promise.title,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                          color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
-                                          decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                _StatusChip(status: promise.status, isOverdue: isOverdue),
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () => setState(() => _isExpanded = !_isExpanded),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.05),
+                                      shape: BoxShape.circle,
                                     ),
-                                    const SizedBox(width: 8),
-                                    if (promise.status != PromiseStatus.completed)
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: _getPriorityColor(promise.priority),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
-                                          fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    child: Icon(
+                                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                      color: AppColors.primary.withOpacity(0.6),
+                                      size: 20,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              _StatusChip(status: promise.status, isOverdue: isOverdue),
-                              const SizedBox(height: 8),
-                              if (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true)
-                                GestureDetector(
-                                  onTap: () => setState(() => _isExpanded = !_isExpanded),
-                                  child: Icon(
-                                    _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                                    color: AppColors.textTertiary,
-                                    size: 20,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: _isExpanded && (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true)
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 16.0, left: 64.0),
-                                child: Text(
-                                  promise.description?.isNotEmpty == true ? promise.description! : promise.notes!,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.fastOutSlowIn,
+                child: _isExpanded
+                    ? Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(64, 0, 24, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Divider(height: 1, thickness: 0.5),
+                            const SizedBox(height: 16),
+                            if (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true) ...[
+                              Text(
+                                promise.description?.isNotEmpty == true ? promise.description! : promise.notes!,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                  height: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            Row(
+                              children: [
+                                _buildInfoTag(
+                                  Icons.category_outlined,
+                                  promise.category.name.toUpperCase(),
+                                  AppColors.primary.withOpacity(0.1),
+                                  AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildInfoTag(
+                                  Icons.priority_high_rounded,
+                                  promise.priority.name.toUpperCase(),
+                                  _getPriorityColor(promise.priority).withOpacity(0.1),
+                                  _getPriorityColor(promise.priority),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoTag(IconData icon, String label, Color bgColor, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: iconColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -490,16 +547,16 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: textColor, 
-          fontSize: 10, 
+          fontSize: 9, 
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
         ),

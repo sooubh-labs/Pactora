@@ -391,16 +391,46 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
                         AnimatedSize(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
-                          child: _isExpanded && item.notes?.isNotEmpty == true
-                              ? Padding(
-                                  padding: const EdgeInsets.only(top: 16.0, left: 64.0),
-                                  child: Text(
-                                    item.notes!,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.textSecondary,
-                                      height: 1.4,
-                                    ),
+                          child: _isExpanded
+                              ? Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.fromLTRB(64, 0, 24, 20),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Divider(height: 1, thickness: 0.5),
+                                      const SizedBox(height: 12),
+                                      if (item.notes?.isNotEmpty == true) ...[
+                                        Text(
+                                          item.notes!,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: AppColors.textSecondary,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                      Row(
+                                        children: [
+                                          _buildInfoTag(
+                                            item.iLent ? Icons.outbox_rounded : Icons.move_to_inbox_rounded,
+                                            item.iLent ? 'I LENT' : 'I BORROWED',
+                                            (item.iLent ? const Color(0xFFD81B60) : AppColors.success).withOpacity(0.1),
+                                            item.iLent ? const Color(0xFFD81B60) : AppColors.success,
+                                          ),
+                                          if (item.condition?.isNotEmpty == true) ...[
+                                            const SizedBox(width: 8),
+                                            _buildInfoTag(
+                                              Icons.info_outline_rounded,
+                                              item.condition!.toUpperCase(),
+                                              AppColors.primary.withOpacity(0.1),
+                                              AppColors.primary,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 )
                               : const SizedBox.shrink(),
@@ -413,6 +443,31 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+  Widget _buildInfoTag(IconData icon, String label, Color bgColor, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: iconColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

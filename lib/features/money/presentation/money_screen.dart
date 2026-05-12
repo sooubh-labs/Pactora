@@ -407,16 +407,44 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
                       AnimatedSize(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
-                        child: _isExpanded && record.description?.isNotEmpty == true
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 16.0, left: 64.0),
-                                child: Text(
-                                  record.description!,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                    height: 1.4,
-                                  ),
+                        child: _isExpanded
+                            ? Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.fromLTRB(64, 0, 24, 20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(height: 1, thickness: 0.5),
+                                    const SizedBox(height: 12),
+                                    if (record.description?.isNotEmpty == true) ...[
+                                      Text(
+                                        record.description!,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+                                    Row(
+                                      children: [
+                                        _buildInfoTag(
+                                          record.iOwe ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                          record.iOwe ? 'I OWE' : 'OWED TO ME',
+                                          (record.iOwe ? AppColors.error : AppColors.success).withOpacity(0.1),
+                                          record.iOwe ? AppColors.error : AppColors.success,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        _buildInfoTag(
+                                          Icons.attach_money_rounded,
+                                          'AMOUNT: \$${record.amount.toStringAsFixed(0)}',
+                                          AppColors.primary.withOpacity(0.1),
+                                          AppColors.primary,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               )
                             : const SizedBox.shrink(),
@@ -429,6 +457,31 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
           ),
         ),
       ),
+      ),
+    );
+  }
+  Widget _buildInfoTag(IconData icon, String label, Color bgColor, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: iconColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
