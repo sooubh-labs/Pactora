@@ -17,9 +17,12 @@ class PromisesScreen extends ConsumerStatefulWidget {
   ConsumerState<PromisesScreen> createState() => _PromisesScreenState();
 }
 
+enum PromiseSortType { date, priority, category }
+
 class _PromisesScreenState extends ConsumerState<PromisesScreen> {
   DateTime? _selectedDate;
   int _selectedFilterIndex = 0; // 0: All, 1: Pending, 2: Overdue, 3: Done
+  PromiseSortType _currentSort = PromiseSortType.date;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +32,26 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
       appBar: AppBar(
         title: const Text('Promises'),
         actions: [
+          PopupMenuButton<PromiseSortType>(
+            icon: const Icon(Icons.sort_rounded),
+            onSelected: (sortType) {
+              setState(() => _currentSort = sortType);
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: PromiseSortType.date,
+                child: Text('Sort by Date (Urgency)'),
+              ),
+              const PopupMenuItem(
+                value: PromiseSortType.priority,
+                child: Text('Sort by Priority'),
+              ),
+              const PopupMenuItem(
+                value: PromiseSortType.category,
+                child: Text('Sort by Category'),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
             onPressed: () {},
@@ -76,7 +99,7 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
                         p.dueDate != null && isSameDay(p.dueDate, _selectedDate)
                       ).toList();
 
-                  List<Promise> finalPromises;
+                  List<Promise> finalPromises = filteredPromises;
                   switch (_selectedFilterIndex) {
                     case 1:
                       finalPromises = filteredPromises.where((p) => p.status == PromiseStatus.pending).toList();
@@ -87,9 +110,25 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
                     case 3:
                       finalPromises = filteredPromises.where((p) => p.status == PromiseStatus.completed).toList();
                       break;
-                    case 0:
-                    default:
-                      finalPromises = filteredPromises;
+                  }
+
+                  // Sorting logic
+                  finalPromises = List.from(finalPromises);
+                  switch (_currentSort) {
+                    case PromiseSortType.priority:
+                      finalPromises.sort((a, b) => b.priority.index.compareTo(a.priority.index)); // High (2) to Low (0)
+                      break;
+                    case PromiseSortType.category:
+                      finalPromises.sort((a, b) => a.category.name.compareTo(b.category.name));
+                      break;
+                    case PromiseSortType.date:
+                      finalPromises.sort((a, b) {
+                        if (a.dueDate == null && b.dueDate == null) return 0;
+                        if (a.dueDate == null) return 1;
+                        if (b.dueDate == null) return -1;
+                        return a.dueDate!.compareTo(b.dueDate!);
+                      });
+                      break;
                   }
 
                   return _PromiseList(promises: finalPromises);

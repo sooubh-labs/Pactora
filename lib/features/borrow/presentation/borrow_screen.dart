@@ -1,28 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../domain/item_model.dart';
 import '../../promises/domain/promise_enums.dart';
 import 'item_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
-class BorrowScreen extends ConsumerWidget {
+enum BorrowSortType { date, name }
+
+class BorrowScreen extends ConsumerStatefulWidget {
   final DateTime? selectedDate;
   const BorrowScreen({super.key, this.selectedDate});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BorrowScreen> createState() => _BorrowScreenState();
+}
+
+class _BorrowScreenState extends ConsumerState<BorrowScreen> {
+  BorrowSortType _currentSort = BorrowSortType.date;
+
+  @override
+  Widget build(BuildContext context) {
     final itemsAsync = ref.watch(allItemsProvider);
 
     return itemsAsync.when(
       data: (allItems) {
-        final items = selectedDate == null 
+        final items = widget.selectedDate == null 
           ? allItems 
-          : allItems.where((i) => i.expectedReturn != null && isSameDay(i.expectedReturn, selectedDate)).toList();
+          : allItems.where((i) => i.expectedReturn != null && isSameDay(i.expectedReturn, widget.selectedDate)).toList();
 
         final lentItems = items.where((i) => i.iLent && i.status == ItemStatus.active).length;
         final borrowedItems = items.where((i) => !i.iLent && i.status == ItemStatus.active).length;
+
+        // Sorting logic
+        List<BorrowItem> sortedItems = List.from(items);
+        if (_currentSort == BorrowSortType.name) {
+          sortedItems.sort((a, b) => a.name.compareTo(b.name));
+        } else {
+          // Sort by date (urgency)
+          sortedItems.sort((a, b) {
+            if (a.expectedReturn == null && b.expectedReturn == null) return 0;
+            if (a.expectedReturn == null) return 1;
+            if (b.expectedReturn == null) return -1;
+            return a.expectedReturn!.compareTo(b.expectedReturn!);
+          });
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -35,23 +59,34 @@ class BorrowScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Recent Activity',
+                    'Items',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-                    child: const Text('View All', style: TextStyle(fontWeight: FontWeight.w600)),
+                  PopupMenuButton<BorrowSortType>(
+                    icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
+                    onSelected: (sortType) {
+                      setState(() => _currentSort = sortType);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: BorrowSortType.date,
+                        child: Text('Sort by Urgency (Date)'),
+                      ),
+                      const PopupMenuItem(
+                        value: BorrowSortType.name,
+                        child: Text('Sort by Name'),
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              _ItemList(items: items),
-              const SizedBox(height: 100), // padding for floating nav
+              _ItemList(items: sortedItems),
+              const SizedBox(height: 140), // padding for floating nav
             ],
           ),
         );
@@ -236,94 +271,98 @@ class _ItemCard extends ConsumerWidget {
           ),
         ],
       ) : null,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left Accent Border
-              Container(
-                width: 6,
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    bottomLeft: Radius.circular(32),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Row(
-                    children: [
-                      // Avatar mock (initials)
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: iconBgColor,
-                        child: Text(
-                          'SJ', // Mock initials
-                          style: TextStyle(
-                            color: accentColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              item.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.iLent ? 'Lent to someone' : 'Borrowed from someone',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _StatusChip(status: item.status, isOverdue: isOverdue),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+      child: GestureDetector(
+        onTap: () => context.push('/borrow/${item.id}'),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.03),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left Accent Border
+                Container(
+                  width: 6,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      bottomLeft: Radius.circular(32),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Row(
+                      children: [
+                        // Avatar mock (initials)
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: iconBgColor,
+                          child: Text(
+                            'SJ', // Mock initials
+                            style: TextStyle(
+                              color: accentColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.iLent ? 'Lent to someone' : 'Borrowed from someone',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _StatusChip(status: item.status, isOverdue: isOverdue),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

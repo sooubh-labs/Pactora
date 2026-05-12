@@ -1,13 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 
-class MoreScreen extends ConsumerWidget {
+class MoreScreen extends ConsumerStatefulWidget {
   const MoreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MoreScreen> createState() => _MoreScreenState();
+}
+
+class _MoreScreenState extends ConsumerState<MoreScreen> {
+  String _name = 'User Name';
+  String _email = 'user@example.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('profile_name') ?? 'User Name';
+      _email = prefs.getString('profile_email') ?? 'user@example.com';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Refresh profile when screen is built (in case user just navigated back from profile edit)
+    _loadProfile();
+
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -159,7 +185,6 @@ class MoreScreen extends ConsumerWidget {
               radius: 32,
               backgroundColor: AppColors.primaryLight,
               child: Icon(Icons.person_rounded, size: 36, color: Colors.white),
-              // backgroundImage: AssetImage('assets/images/avatar.png'),
             ),
           ),
           const SizedBox(width: 16),
@@ -194,34 +219,6 @@ class MoreScreen extends ConsumerWidget {
           IconButton(
             onPressed: () => context.push('/profile'),
             icon: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              padding: const EdgeInsets.all(12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MenuData {
-  final IconData icon;
-  final String title;
-  final Color color;
-  final Color bgColor;
-  final VoidCallback onTap;
-
-  _MenuData({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.bgColor,
-    required this.onTap,
-  });
-}
-rs.white, size: 20),
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withOpacity(0.15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

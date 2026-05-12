@@ -8,22 +8,45 @@ import '../../promises/domain/promise_enums.dart';
 import 'money_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
-class MoneyScreen extends ConsumerWidget {
+enum MoneySortType { date, amount }
+
+class MoneyScreen extends ConsumerStatefulWidget {
   final DateTime? selectedDate;
   const MoneyScreen({super.key, this.selectedDate});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MoneyScreen> createState() => _MoneyScreenState();
+}
+
+class _MoneyScreenState extends ConsumerState<MoneyScreen> {
+  MoneySortType _currentSort = MoneySortType.date;
+
+  @override
+  Widget build(BuildContext context) {
     final recordsAsync = ref.watch(allMoneyRecordsProvider);
 
     return recordsAsync.when(
       data: (allRecords) {
-        final records = selectedDate == null 
+        final records = widget.selectedDate == null 
           ? allRecords 
-          : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, selectedDate)).toList();
+          : allRecords.where((r) => r.dueDate != null && isSameDay(r.dueDate, widget.selectedDate)).toList();
 
         final owedToMe = records.where((r) => !r.iOwe && r.status != MoneyStatus.paid).fold(0.0, (sum, r) => sum + r.amount);
         final iOwe = records.where((r) => r.iOwe && r.status != MoneyStatus.paid).fold(0.0, (sum, r) => sum + r.amount);
+
+        // Sorting logic
+        List<MoneyRecord> sortedRecords = List.from(records);
+        if (_currentSort == MoneySortType.amount) {
+          sortedRecords.sort((a, b) => b.amount.compareTo(a.amount));
+        } else {
+          // Sort by date (urgency)
+          sortedRecords.sort((a, b) {
+            if (a.dueDate == null && b.dueDate == null) return 0;
+            if (a.dueDate == null) return 1;
+            if (b.dueDate == null) return -1;
+            return a.dueDate!.compareTo(b.dueDate!);
+          });
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -36,22 +59,33 @@ class MoneyScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Recent Activity',
+                    'Records',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-                    child: const Text('View All', style: TextStyle(fontWeight: FontWeight.w600)),
+                  PopupMenuButton<MoneySortType>(
+                    icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
+                    onSelected: (sortType) {
+                      setState(() => _currentSort = sortType);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: MoneySortType.date,
+                        child: Text('Sort by Urgency (Date)'),
+                      ),
+                      const PopupMenuItem(
+                        value: MoneySortType.amount,
+                        child: Text('Sort by Amount'),
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              _RecordList(records: records),
+              _RecordList(records: sortedRecords),
               const SizedBox(height: 140), // padding for floating nav
             ],
           ),
