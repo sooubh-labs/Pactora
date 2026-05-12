@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Pactora needs access to your camera to capture proof of promises.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pactora needs access to your gallery to upload proof and profile pictures.</string>
 </dict>
 </plist>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -127,6 +128,30 @@ class PromiseDetailScreen extends ConsumerWidget {
                         color: AppColors.textSecondary,
                         height: 1.6,
                       ),
+                    ),
+                  ),
+                ],
+                if (promise.attachmentPaths.isNotEmpty) ...[
+                  const Gap(32),
+                  _buildSectionTitle(context, 'Attachments'),
+                  const Gap(16),
+                  SizedBox(
+                    height: 120,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: promise.attachmentPaths.length,
+                      separatorBuilder: (context, index) => const Gap(12),
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.file(
+                            File(promise.attachmentPaths[index]),
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

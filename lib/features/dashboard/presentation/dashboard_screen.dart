@@ -21,30 +21,35 @@ class DashboardScreen extends ConsumerWidget {
             Expanded(
               child: summaryAsync.when(
                 data: (summary) => SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8), // Reduced vertical from 16
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSummaryGrid(summary, context),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24), // Reduced from 32/20
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Recent Activity',
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                ),
                           ),
                           TextButton(
                             onPressed: () => context.push('/timeline'),
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.primary,
                               textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
                             ),
                             child: const Text('View All'),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12), // Reduced from 16
                       _buildRecentActivity(summary.recentActivity, context),
                       const SizedBox(height: 140), // padding for floating nav
                     ],
@@ -229,6 +234,7 @@ class DashboardScreen extends ConsumerWidget {
         }
 
         return GridView.count(
+          padding: EdgeInsets.zero,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: crossAxisCount,

@@ -336,90 +336,139 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                        child: Row(
+                        child: Column(
                           children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: iconBgColor,
-                              child: Icon(_getCategoryIcon(promise.category), color: accentColor, size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          promise.title,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700,
-                                            color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
-                                            decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      if (promise.status != PromiseStatus.completed)
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: BoxDecoration(
-                                            color: _getPriorityColor(promise.priority),
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
-                                            fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            Row(
                               children: [
-                                _StatusChip(status: promise.status, isOverdue: isOverdue),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () => setState(() => _isExpanded = !_isExpanded),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.05),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                                      color: AppColors.primary.withOpacity(0.6),
-                                      size: 20,
-                                    ),
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: iconBgColor,
+                                  child: Icon(_getCategoryIcon(promise.category), color: accentColor, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              promise.title,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
+                                                decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          if (promise.status != PromiseStatus.completed)
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              decoration: BoxDecoration(
+                                                color: _getPriorityColor(promise.priority),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
+                                                fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    _StatusChip(status: promise.status, isOverdue: isOverdue),
+                                    const SizedBox(height: 8),
+                                    GestureDetector(
+                                      onTap: () => setState(() => _isExpanded = !_isExpanded),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withOpacity(0.05),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                          color: AppColors.primary.withOpacity(0.6),
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
+                            ),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.fastOutSlowIn,
+                              child: _isExpanded
+                                  ? Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Divider(height: 1, thickness: 0.5),
+                                          const SizedBox(height: 16),
+                                          if (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true) ...[
+                                            Text(
+                                              promise.description?.isNotEmpty == true ? promise.description! : promise.notes!,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary,
+                                                height: 1.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                          ],
+                                          Row(
+                                            children: [
+                                              _buildInfoTag(
+                                                Icons.category_outlined,
+                                                promise.category.name.toUpperCase(),
+                                                AppColors.primary.withOpacity(0.1),
+                                                AppColors.primary,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              _buildInfoTag(
+                                                Icons.priority_high_rounded,
+                                                promise.priority.name.toUpperCase(),
+                                                _getPriorityColor(promise.priority).withOpacity(0.1),
+                                                _getPriorityColor(promise.priority),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
                           ],
                         ),
@@ -427,51 +476,6 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
                     ),
                   ],
                 ),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.fastOutSlowIn,
-                child: _isExpanded
-                    ? Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(64, 0, 24, 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Divider(height: 1, thickness: 0.5),
-                            const SizedBox(height: 16),
-                            if (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true) ...[
-                              Text(
-                                promise.description?.isNotEmpty == true ? promise.description! : promise.notes!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                            Row(
-                              children: [
-                                _buildInfoTag(
-                                  Icons.category_outlined,
-                                  promise.category.name.toUpperCase(),
-                                  AppColors.primary.withOpacity(0.1),
-                                  AppColors.primary,
-                                ),
-                                const SizedBox(width: 8),
-                                _buildInfoTag(
-                                  Icons.priority_high_rounded,
-                                  promise.priority.name.toUpperCase(),
-                                  _getPriorityColor(promise.priority).withOpacity(0.1),
-                                  _getPriorityColor(promise.priority),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox.shrink(),
               ),
             ],
           ),

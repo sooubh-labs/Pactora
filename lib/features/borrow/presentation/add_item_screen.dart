@@ -26,6 +26,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   int? _selectedPersonId;
   bool _iLent = true;
   DateTime? _selectedDate;
+  String? _photoPath;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       _selectedPersonId = widget.item!.personId;
       _iLent = widget.item!.iLent;
       _selectedDate = widget.item!.expectedReturn;
+      _photoPath = widget.item!.photoPath;
     }
   }
 
@@ -134,10 +136,9 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
               const Text('Attachment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               const SizedBox(height: 10),
               ProofUploadWidget(
-                onUpload: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Photo upload coming soon')),
-                  );
+                initialPaths: _photoPath != null ? [_photoPath!] : [],
+                onPathsChanged: (paths) {
+                  setState(() => _photoPath = paths.isNotEmpty ? paths.first : null);
                 },
               ),
               const SizedBox(height: 48),
@@ -253,6 +254,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         ..personId = _selectedPersonId!
         ..iLent = _iLent
         ..expectedReturn = _selectedDate
+        ..photoPath = _photoPath
         ..notes = _notesController.text.isEmpty ? null : _notesController.text;
 
       if (widget.item != null) {

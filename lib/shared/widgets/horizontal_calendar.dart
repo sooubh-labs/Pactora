@@ -97,8 +97,8 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      height: 100, // Reduced from 120
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
@@ -124,14 +124,14 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 64,
+                width: 56, // Reduced from 64
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(32), // Tall pill shape
+                  borderRadius: BorderRadius.circular(24), // More rounded pill
                   boxShadow: [
                     BoxShadow(
-                      color: isSelected ? AppColors.primary.withOpacity(0.3) : AppColors.primary.withOpacity(0.04),
-                      blurRadius: isSelected ? 16 : 8,
+                      color: isSelected ? AppColors.primary.withOpacity(0.2) : AppColors.primary.withOpacity(0.04),
+                      blurRadius: isSelected ? 12 : 6,
                       offset: const Offset(0, 4),
                     )
                   ],
@@ -142,23 +142,23 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                     Text(
                       DateFormat('E').format(date).toUpperCase(),
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 10, // Smaller font
                         letterSpacing: 0.5,
                         color: isSelected ? Colors.white.withOpacity(0.8) : AppColors.textTertiary,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       DateFormat('d').format(date),
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18, // Smaller font
                         fontWeight: FontWeight.w800,
                         color: isSelected ? Colors.white : AppColors.textPrimary,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     if (hasActivity)
                       Container(
                         width: 4,

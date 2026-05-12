@@ -33,6 +33,7 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
   TimeOfDay? _selectedTime;
   bool _iMadeThisPromise = true;
   RecurrenceType _selectedRecurrence = RecurrenceType.none;
+  List<String> _attachmentPaths = [];
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
       }
       _iMadeThisPromise = widget.promise!.iMadeThisPromise;
       _selectedRecurrence = widget.promise!.recurrence;
+      _attachmentPaths = List.from(widget.promise!.attachmentPaths);
     }
   }
 
@@ -226,10 +228,10 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
               const Text('Attachment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               const SizedBox(height: 10),
               ProofUploadWidget(
-                onUpload: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Photo upload coming soon')),
-                  );
+                initialPaths: _attachmentPaths,
+                multiple: true,
+                onPathsChanged: (paths) {
+                  setState(() => _attachmentPaths = paths);
                 },
               ),
               const SizedBox(height: 48),
@@ -371,6 +373,7 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
         ..iMadeThisPromise = _iMadeThisPromise
         ..recurrence = _selectedRecurrence
         ..notes = _notesController.text.isEmpty ? null : _notesController.text
+        ..attachmentPaths = _attachmentPaths
         ..type = _iMadeThisPromise ? PromiseType.iPromised : PromiseType.theyPromised;
 
       if (widget.promise != null) {

@@ -27,6 +27,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
   bool _iOwe = true;
   DateTime? _selectedDate;
   String _selectedCurrency = 'INR';
+  String? _photoPath;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
       _iOwe = widget.record!.iOwe;
       _selectedDate = widget.record!.dueDate;
       _selectedCurrency = widget.record!.currency;
+      _photoPath = widget.record!.photoPath;
     }
   }
 
@@ -138,10 +140,9 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
               const Text('Proof of Transfer', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               const SizedBox(height: 10),
               ProofUploadWidget(
-                onUpload: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Photo upload coming soon')),
-                  );
+                initialPaths: _photoPath != null ? [_photoPath!] : [],
+                onPathsChanged: (paths) {
+                  setState(() => _photoPath = paths.isNotEmpty ? paths.first : null);
                 },
               ),
               const SizedBox(height: 48),
@@ -262,6 +263,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
         ..currency = _selectedCurrency
         ..personId = _selectedPersonId!
         ..iOwe = _iOwe
+        ..photoPath = _photoPath
         ..dueDate = _selectedDate
         ..description = _descriptionController.text.isEmpty ? null : _descriptionController.text;
 

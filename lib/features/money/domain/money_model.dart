@@ -11,6 +11,7 @@ class MoneyRecord {
   late double amount;
   late String currency; // 'INR', 'USD' etc.
   late bool iOwe; // true = I owe them; false = they owe me
+  String? photoPath;
 
   @enumerated
   late MoneyStatus status;
@@ -33,6 +34,7 @@ class MoneyRecord {
         'amount': amount,
         'currency': currency,
         'iOwe': iOwe,
+        'photoPath': photoPath,
         'status': status.index,
         'paidAmount': paidAmount,
         'description': description,
@@ -47,6 +49,7 @@ class MoneyRecord {
     ..amount = json['amount'] as double
     ..currency = json['currency'] as String
     ..iOwe = json['iOwe'] as bool
+    ..photoPath = json['photoPath'] as String?
     ..status = MoneyStatus.values[json['status'] as int]
     ..paidAmount = json['paidAmount'] as double
     ..description = json['description'] as String?

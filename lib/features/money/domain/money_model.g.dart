@@ -62,8 +62,13 @@ const MoneyRecordSchema = CollectionSchema(
       name: r'personId',
       type: IsarType.long,
     ),
-    r'status': PropertySchema(
+    r'photoPath': PropertySchema(
       id: 9,
+      name: r'photoPath',
+      type: IsarType.string,
+    ),
+    r'status': PropertySchema(
+      id: 10,
       name: r'status',
       type: IsarType.byte,
       enumMap: _MoneyRecordstatusEnumValueMap,
@@ -96,6 +101,12 @@ int _moneyRecordEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.photoPath;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -114,7 +125,8 @@ void _moneyRecordSerialize(
   writer.writeBool(offsets[6], object.isArchived);
   writer.writeDouble(offsets[7], object.paidAmount);
   writer.writeLong(offsets[8], object.personId);
-  writer.writeByte(offsets[9], object.status.index);
+  writer.writeString(offsets[9], object.photoPath);
+  writer.writeByte(offsets[10], object.status.index);
 }
 
 MoneyRecord _moneyRecordDeserialize(
@@ -134,8 +146,9 @@ MoneyRecord _moneyRecordDeserialize(
   object.isArchived = reader.readBool(offsets[6]);
   object.paidAmount = reader.readDouble(offsets[7]);
   object.personId = reader.readLong(offsets[8]);
+  object.photoPath = reader.readStringOrNull(offsets[9]);
   object.status =
-      _MoneyRecordstatusValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+      _MoneyRecordstatusValueEnumMap[reader.readByteOrNull(offsets[10])] ??
           MoneyStatus.pending;
   return object;
 }
@@ -166,6 +179,8 @@ P _moneyRecordDeserializeProp<P>(
     case 8:
       return (reader.readLong(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset)) as P;
+    case 10:
       return (_MoneyRecordstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           MoneyStatus.pending) as P;
     default:
@@ -953,6 +968,160 @@ extension MoneyRecordQueryFilter
     });
   }
 
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'photoPath',
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'photoPath',
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'photoPath',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'photoPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'photoPath',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'photoPath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition>
+      photoPathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'photoPath',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<MoneyRecord, MoneyRecord, QAfterFilterCondition> statusEqualTo(
       MoneyStatus value) {
     return QueryBuilder.apply(this, (query) {
@@ -1124,6 +1293,18 @@ extension MoneyRecordQuerySortBy
     });
   }
 
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> sortByPhotoPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'photoPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> sortByPhotoPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'photoPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> sortByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.asc);
@@ -1259,6 +1440,18 @@ extension MoneyRecordQuerySortThenBy
     });
   }
 
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> thenByPhotoPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'photoPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> thenByPhotoPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'photoPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<MoneyRecord, MoneyRecord, QAfterSortBy> thenByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.asc);
@@ -1330,6 +1523,13 @@ extension MoneyRecordQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MoneyRecord, MoneyRecord, QDistinct> distinctByPhotoPath(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'photoPath', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<MoneyRecord, MoneyRecord, QDistinct> distinctByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'status');
@@ -1396,6 +1596,12 @@ extension MoneyRecordQueryProperty
   QueryBuilder<MoneyRecord, int, QQueryOperations> personIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'personId');
+    });
+  }
+
+  QueryBuilder<MoneyRecord, String?, QQueryOperations> photoPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'photoPath');
     });
   }
 

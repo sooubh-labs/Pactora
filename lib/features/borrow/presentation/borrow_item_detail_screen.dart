@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -119,6 +120,20 @@ class BorrowItemDetailScreen extends ConsumerWidget {
                         color: AppColors.textSecondary,
                         height: 1.6,
                       ),
+                    ),
+                  ),
+                ],
+                if (item.photoPath != null) ...[
+                  const Gap(32),
+                  _buildSectionTitle(context, 'Photo'),
+                  const Gap(16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.file(
+                      File(item.photoPath!),
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ],
