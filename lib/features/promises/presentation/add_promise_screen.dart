@@ -9,6 +9,7 @@ import 'promise_provider.dart';
 import 'widgets/category_chip_selector.dart';
 import 'widgets/person_picker_field.dart';
 import '../../../shared/widgets/proof_upload_widget.dart';
+import '../../../core/theme/app_colors.dart';
 
 class AddPromiseScreen extends ConsumerStatefulWidget {
   final Promise? promise;
@@ -66,121 +67,164 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.promise == null ? 'New Promise' : 'Edit Promise'),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: const Text('Save'),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
+              _buildField(
+                label: 'Title',
                 controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  border: OutlineInputBorder(),
-                ),
+                icon: Icons.title_rounded,
                 validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              const Text('Who is involved?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              const SizedBox(height: 10),
               PersonPickerField(
                 selectedPersonId: _selectedPersonId,
                 onPersonSelected: (Person person) {
                   setState(() => _selectedPersonId = person.id);
                 },
               ),
-              const SizedBox(height: 16),
-              const Text('Category', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
+              _buildWrapper(
+                label: 'Promise Type',
+                child: SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  title: const Text('I made this promise', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.textPrimary)),
+                  subtitle: Text(_iMadeThisPromise ? 'You are the promiser' : 'They promised you', style: const TextStyle(color: AppColors.textSecondary)),
+                  value: _iMadeThisPromise,
+                  activeColor: AppColors.primary,
+                  onChanged: (val) => setState(() => _iMadeThisPromise = val),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              const SizedBox(height: 10),
               CategoryChipSelector(
                 selectedCategory: _selectedCategory,
                 onCategorySelected: (PromiseCategory category) {
                   setState(() => _selectedCategory = category);
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
-                    child: InkWell(
-                      onTap: _pickDate,
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Due Date',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.calendar_today),
+                    child: _buildWrapper(
+                      label: 'Due Date',
+                      child: InkWell(
+                        onTap: _pickDate,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today_rounded, color: AppColors.primary.withOpacity(0.5), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _selectedDate == null ? 'Select Date' : DateFormat('MMM dd, yyyy').format(_selectedDate!),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: _selectedDate == null ? AppColors.textTertiary : AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(_selectedDate == null
-                            ? 'Select Date'
-                            : DateFormat('MMM dd, yyyy').format(_selectedDate!)),
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: InkWell(
-                      onTap: _pickTime,
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Due Time',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.access_time),
+                    child: _buildWrapper(
+                      label: 'Time (Optional)',
+                      child: InkWell(
+                        onTap: _pickTime,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                          child: Row(
+                            children: [
+                              Icon(Icons.access_time_rounded, color: AppColors.primary.withOpacity(0.5), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _selectedTime == null ? 'Select Time' : _selectedTime!.format(context),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: _selectedTime == null ? AppColors.textTertiary : AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(_selectedTime == null
-                            ? 'Select Time'
-                            : _selectedTime!.format(context)),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Priority', style: TextStyle(fontWeight: FontWeight.bold)),
-              SegmentedButton<Priority>(
-                segments: const [
-                  ButtonSegment(value: Priority.low, label: Text('Low')),
-                  ButtonSegment(value: Priority.medium, label: Text('Med')),
-                  ButtonSegment(value: Priority.high, label: Text('High')),
-                ],
-                selected: {_selectedPriority},
-                onSelectionChanged: (val) => setState(() => _selectedPriority = val.first),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('I made this promise'),
-                subtitle: Text(_iMadeThisPromise ? 'You are the promiser' : 'They promised you'),
-                value: _iMadeThisPromise,
-                onChanged: (val) => setState(() => _iMadeThisPromise = val),
-              ),
-              const SizedBox(height: 16),
-              const Text('Recurrence', style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButtonFormField<RecurrenceType>(
-                initialValue: _selectedRecurrence,
-                items: RecurrenceType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type.name.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedRecurrence = val!),
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(),
+              const SizedBox(height: 24),
+              _buildWrapper(
+                label: 'Priority',
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SegmentedButton<Priority>(
+                    style: SegmentedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      selectedForegroundColor: Colors.white,
+                      selectedBackgroundColor: AppColors.primary,
+                      side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                    ),
+                    segments: const [
+                      ButtonSegment(value: Priority.low, label: Text('Low')),
+                      ButtonSegment(value: Priority.medium, label: Text('Medium')),
+                      ButtonSegment(value: Priority.high, label: Text('High')),
+                    ],
+                    selected: {_selectedPriority},
+                    onSelectionChanged: (val) => setState(() => _selectedPriority = val.first),
+                  ),
                 ),
-                maxLines: 3,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              _buildWrapper(
+                label: 'Recurrence',
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<RecurrenceType>(
+                    value: _selectedRecurrence,
+                    icon: Icon(Icons.expand_more_rounded, color: AppColors.primary.withOpacity(0.5)),
+                    isExpanded: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    items: RecurrenceType.values.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(type.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w600)),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => _selectedRecurrence = val!),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildField(
+                label: 'Notes / Description',
+                controller: _notesController,
+                icon: Icons.notes_rounded,
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+              const Text('Attachment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              const SizedBox(height: 10),
               ProofUploadWidget(
                 onUpload: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -188,10 +232,82 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
                   );
                 },
               ),
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _save,
+                  child: const Text('Save Promise'),
+                ),
+              ),
+              const SizedBox(height: 48),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return _buildWrapper(
+      label: label,
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        validator: validator,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+        decoration: InputDecoration(
+          prefixIcon: Padding(
+            padding: EdgeInsets.only(bottom: maxLines > 1 ? (maxLines * 16.0) - 24 : 0),
+            child: Icon(icon, color: AppColors.primary.withOpacity(0.5)),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWrapper({required String label, required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(color: Colors.black.withOpacity(0.05)),
+          ),
+          child: child,
+        ),
+      ],
     );
   }
 
@@ -201,6 +317,16 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (date != null) setState(() => _selectedDate = date);
   }
@@ -209,6 +335,16 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
     final time = await showTimePicker(
       context: context,
       initialTime: _selectedTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (time != null) setState(() => _selectedTime = time);
   }

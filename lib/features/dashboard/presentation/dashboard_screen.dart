@@ -62,24 +62,39 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
-            radius: 24,
+            radius: 28,
             backgroundColor: AppColors.primary.withOpacity(0.1),
-            child: const Icon(Icons.person, color: AppColors.primary),
-            // backgroundImage: AssetImage('assets/images/avatar.png'), // If we had one
+            child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 28),
           ),
           Text(
             'Welcome Back',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 24),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: 26,
+                  letterSpacing: -0.5,
+                ),
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, size: 28),
-            color: AppColors.primary,
-            onPressed: () {},
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none_rounded, size: 28),
+              color: AppColors.primary,
+              onPressed: () {},
+            ),
           ),
         ],
       ),
