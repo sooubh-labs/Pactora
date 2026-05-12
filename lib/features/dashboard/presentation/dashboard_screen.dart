@@ -142,27 +142,69 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActivityMock(BuildContext context) {
+  Widget _buildRecentActivity(List<ActivityItemData> activities, BuildContext context) {
+    if (activities.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32),
+          child: Text(
+            'No recent activity',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
     return Column(
-      children: [
-        _ActivityItem(
-          title: 'Return "Design Systems" book',
-          subtitle: 'Due Tomorrow',
-          icon: Icons.book_outlined,
-          color: AppColors.pendingText,
-          bgColor: AppColors.pendingBg,
-          onTap: () => context.go('/finances?tab=borrow'),
-        ),
-        const SizedBox(height: 16),
-        _ActivityItem(
-          title: 'Buy coffee for the team',
-          subtitle: 'Completed',
-          icon: Icons.local_cafe_outlined,
-          color: const Color(0xFF9C27B0),
-          bgColor: const Color(0xFFF3E5F5),
-          onTap: () => context.go('/promises'),
-        ),
-      ],
+      children: activities.map((activity) {
+        IconData icon;
+        Color color;
+        Color bgColor;
+        String route;
+
+        if (activity.isCompleted) {
+          color = AppColors.doneText;
+          bgColor = AppColors.doneBg;
+        } else {
+          color = AppColors.pendingText;
+          bgColor = AppColors.pendingBg;
+        }
+
+        switch (activity.type) {
+          case ActivityType.promise:
+            icon = Icons.handshake_rounded;
+            route = '/promises/${activity.id}';
+            break;
+          case ActivityType.borrow:
+            icon = Icons.inventory_2_outlined;
+            route = '/borrow/${activity.id}';
+            if (!activity.isCompleted) {
+              color = const Color(0xFFD81B60);
+              bgColor = const Color(0xFFFCE4EC);
+            }
+            break;
+          case ActivityType.money:
+            icon = Icons.payments_outlined;
+            route = '/money/${activity.id}';
+            if (!activity.isCompleted) {
+              color = AppColors.primaryLight;
+              bgColor = AppColors.primaryLight.withOpacity(0.1);
+            }
+            break;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _ActivityItem(
+            title: activity.title,
+            subtitle: activity.subtitle,
+            icon: icon,
+            color: color,
+            bgColor: bgColor,
+            onTap: () => context.push(route),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -419,56 +461,6 @@ class _StatCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-        ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-                  ),
-                    Icon(Icons.arrow_outward_rounded, size: 18, color: AppColors.textTertiary.withOpacity(0.5)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      count,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                        height: 1.1,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-        ),
           ),
         ),
       ),
