@@ -23,7 +23,7 @@ class CategoryConstants {
     ),
     PromiseCategory.money: CategoryConfig(
       label: 'Money',
-      icon: Icons.currency_rupee,
+      icon: Icons.payments_outlined,
       color: AppColors.money,
     ),
     PromiseCategory.meeting: CategoryConfig(

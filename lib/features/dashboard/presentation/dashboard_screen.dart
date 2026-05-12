@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:io';
 import 'dashboard_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -10,13 +12,14 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
+    final prefs = ref.watch(userPreferencesProvider);
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            _buildHeader(context),
+            _buildHeader(context, prefs),
             _buildSearchBar(context),
             Expanded(
               child: summaryAsync.when(
@@ -25,7 +28,7 @@ class DashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSummaryGrid(summary, context),
+                      _buildSummaryGrid(summary, context, prefs.currencySymbol),
                       const SizedBox(height: 24), // Reduced from 32/20
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,7 +68,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, UserPreferences prefs) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
@@ -76,7 +79,8 @@ class DashboardScreen extends ConsumerWidget {
             child: CircleAvatar(
               radius: 28,
               backgroundColor: AppColors.primary.withOpacity(0.1),
-              child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 28),
+              backgroundImage: prefs.profileImagePath.isNotEmpty ? FileImage(File(prefs.profileImagePath)) : null,
+              child: prefs.profileImagePath.isEmpty ? const Icon(Icons.person_rounded, color: AppColors.primary, size: 28) : null,
             ),
           ),
           Text(
@@ -213,13 +217,13 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  String _formatMoney(double amount) {
-    if (amount >= 1000000) return '\$${(amount / 1000000).toStringAsFixed(1)}M';
-    if (amount >= 1000) return '\$${(amount / 1000).toStringAsFixed(1)}K';
-    return '\$${amount.toStringAsFixed(0)}';
+  String _formatMoney(double amount, String symbol) {
+    if (amount >= 1000000) return '$symbol${(amount / 1000000).toStringAsFixed(1)}M';
+    if (amount >= 1000) return '$symbol${(amount / 1000).toStringAsFixed(1)}K';
+    return '$symbol${amount.toStringAsFixed(0)}';
   }
 
-  Widget _buildSummaryGrid(DashboardSummary summary, BuildContext context) {
+  Widget _buildSummaryGrid(DashboardSummary summary, BuildContext context, String currencySymbol) {
     return LayoutBuilder(
       builder: (context, constraints) {
         int crossAxisCount = 2;
@@ -268,7 +272,7 @@ class DashboardScreen extends ConsumerWidget {
             ),
             _StatCard(
               label: 'Money Owed',
-              count: _formatMoney(summary.moneyOwedToMe),
+              count: _formatMoney(summary.moneyOwedToMe, currencySymbol),
               color: AppColors.primaryLight,
               bgColor: AppColors.primaryLight.withOpacity(0.1),
               icon: Icons.payments_outlined,

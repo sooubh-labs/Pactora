@@ -69,7 +69,7 @@ class MoneyRecordDetailScreen extends ConsumerWidget {
                       error: (_, __) => 'Error',
                     ),
                     trailing: personAsync.when(
-                      data: (person) => PersonAvatar(name: person?.name ?? 'U', radius: 14),
+                      data: (person) => PersonAvatar(name: person?.name ?? 'U', radius: 14, avatarPath: person?.avatarPath),
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
                     ),

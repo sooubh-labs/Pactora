@@ -10,6 +10,7 @@ class Person {
   late String name;
 
   String? phone;
+  String? email;
   String? avatarPath;
   String? notes;
   late DateTime createdAt;
@@ -22,6 +23,7 @@ class Person {
         'id': id,
         'name': name,
         'phone': phone,
+        'email': email,
         'avatarPath': avatarPath,
         'notes': notes,
         'createdAt': createdAt.toIso8601String(),
@@ -31,6 +33,7 @@ class Person {
     ..id = json['id'] as int
     ..name = json['name'] as String
     ..phone = json['phone'] as String?
+    ..email = json['email'] as String?
     ..avatarPath = json['avatarPath'] as String?
     ..notes = json['notes'] as String?
     ..createdAt = DateTime.parse(json['createdAt'] as String);

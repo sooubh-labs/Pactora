@@ -107,7 +107,7 @@ class _PersonCard extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: PersonAvatar(name: person.name),
+        leading: PersonAvatar(name: person.name, avatarPath: person.avatarPath),
         title: Text(
           person.name,
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),

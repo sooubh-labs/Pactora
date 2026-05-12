@@ -8,6 +8,7 @@ import 'money_provider.dart';
 import '../../promises/presentation/widgets/person_picker_field.dart';
 import '../../../shared/widgets/proof_upload_widget.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
 class AddMoneyRecordScreen extends ConsumerStatefulWidget {
   final MoneyRecord? record;
@@ -27,6 +28,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
   bool _iOwe = true;
   DateTime? _selectedDate;
   String _selectedCurrency = 'INR';
+  String _selectedCurrencySymbol = '₹';
   String? _photoPath;
 
   @override
@@ -35,13 +37,25 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
     _amountController = TextEditingController(text: widget.record?.amount.toString());
     _descriptionController = TextEditingController(text: widget.record?.description);
 
-    if (widget.record != null) {
-      _selectedPersonId = widget.record!.personId;
-      _iOwe = widget.record!.iOwe;
-      _selectedDate = widget.record!.dueDate;
-      _selectedCurrency = widget.record!.currency;
-      _photoPath = widget.record!.photoPath;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(userPreferencesProvider);
+      if (widget.record != null) {
+        _selectedPersonId = widget.record!.personId;
+        _iOwe = widget.record!.iOwe;
+        _selectedDate = widget.record!.dueDate;
+        _selectedCurrency = widget.record!.currency;
+        final currencyOpt = currencyOptions.firstWhere(
+          (opt) => opt.code == _selectedCurrency,
+          orElse: () => currencyOptions.first,
+        );
+        _selectedCurrencySymbol = currencyOpt.symbol;
+        _photoPath = widget.record!.photoPath;
+      } else {
+        _selectedCurrency = prefs.currencyCode;
+        _selectedCurrencySymbol = prefs.currencySymbol;
+      }
+      setState(() {});
+    });
   }
 
   @override
@@ -70,7 +84,37 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
                 icon: Icons.payments_rounded,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
-                prefixText: '$_selectedCurrency  ',
+                prefixText: '$_selectedCurrencySymbol  ',
+              ),
+              const SizedBox(height: 24),
+              _buildWrapper(
+                label: 'Currency',
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<CurrencyOption>(
+                      isExpanded: true,
+                      value: currencyOptions.firstWhere(
+                        (opt) => opt.code == _selectedCurrency,
+                        orElse: () => currencyOptions.first,
+                      ),
+                      items: currencyOptions.map((opt) {
+                        return DropdownMenuItem(
+                          value: opt,
+                          child: Text('${opt.symbol} ${opt.code} (${opt.name})'),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedCurrency = val.code;
+                            _selectedCurrencySymbol = val.symbol;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               _buildWrapper(

@@ -8,6 +8,7 @@ import '../domain/money_model.dart';
 import '../../promises/domain/promise_enums.dart';
 import 'money_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
 enum MoneySortType { date, amount }
 
@@ -25,6 +26,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   @override
   Widget build(BuildContext context) {
     final recordsAsync = ref.watch(allMoneyRecordsProvider);
+    final prefs = ref.watch(userPreferencesProvider);
 
     return recordsAsync.when(
       data: (allRecords) {
@@ -54,7 +56,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSummaryCards(owedToMe, iOwe),
+              _buildSummaryCards(owedToMe, iOwe, prefs.currencySymbol),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,7 +99,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     );
   }
 
-  Widget _buildSummaryCards(double owedToMe, double iOwe) {
+  Widget _buildSummaryCards(double owedToMe, double iOwe, String currencySymbol) {
     return Row(
       children: [
         Expanded(
@@ -130,7 +132,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '\$${iOwe.toStringAsFixed(2)}',
+                  '$currencySymbol${iOwe.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -172,7 +174,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '\$${owedToMe.toStringAsFixed(2)}',
+                  '$currencySymbol${owedToMe.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,

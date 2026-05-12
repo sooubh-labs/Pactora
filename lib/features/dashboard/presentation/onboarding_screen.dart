@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gap/gap.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final _nameController = TextEditingController();
+  CurrencyOption _selectedCurrency = currencyOptions.first;
 
   final List<OnboardingPageData> _pages = [
     OnboardingPageData(
@@ -31,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: 'Remember who has your charger or book, and when they\'re returning it.',
     ),
     OnboardingPageData(
-      icon: Icons.currency_rupee,
+      icon: Icons.payments_outlined,
       title: 'Money Tracker',
       body: 'Track small teas to larger loans. Know exactly who owes what.',
     ),
@@ -43,6 +47,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
@@ -52,8 +63,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
-                itemCount: _pages.length,
-                itemBuilder: (context, index) => _OnboardingPage(data: _pages[index]),
+                itemCount: _pages.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < _pages.length) {
+                    return _OnboardingPage(data: _pages[index]);
+                  } else {
+                    return _PersonalizationPage(
+                      nameController: _nameController,
+                      selectedCurrency: _selectedCurrency,
+                      onCurrencyChanged: (currency) {
+                        setState(() => _selectedCurrency = currency!);
+                      },
+                    );
+                  }
+                },
               ),
             ),
             Padding(
@@ -63,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   Row(
                     children: List.generate(
-                      _pages.length,
+                      _pages.length + 1,
                       (index) => Container(
                         margin: const EdgeInsets.only(right: 4),
                         width: 8,
@@ -77,7 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   ElevatedButton(
                     onPressed: _nextPage,
-                    child: Text(_currentPage == _pages.length - 1 ? 'Get Started' : 'Next'),
+                    child: Text(_currentPage == _pages.length ? 'Get Started' : 'Next'),
                   ),
                 ],
               ),
@@ -89,11 +112,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() async {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _pages.length) {
       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
     } else {
+      if (_nameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your name')),
+        );
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('onboarding_complete', true);
+      
+      await ref.read(userPreferencesProvider.notifier).updateProfile(name: _nameController.text.trim());
+      await ref.read(userPreferencesProvider.notifier).updateCurrency(_selectedCurrency.symbol, _selectedCurrency.code);
+
       if (mounted) context.go('/permissions');
     }
   }
@@ -131,6 +165,74 @@ class _OnboardingPage extends StatelessWidget {
             data.body,
             style: const TextStyle(fontSize: 16, color: Colors.grey),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonalizationPage extends StatelessWidget {
+  final TextEditingController nameController;
+  final CurrencyOption selectedCurrency;
+  final ValueChanged<CurrencyOption?> onCurrencyChanged;
+
+  const _PersonalizationPage({
+    required this.nameController,
+    required this.selectedCurrency,
+    required this.onCurrencyChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Almost there!',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          const Gap(8),
+          const Text(
+            'Let\'s personalize your experience.',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const Gap(48),
+          const Text(
+            'What should we call you?',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const Gap(8),
+          TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              hintText: 'Enter your name',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              prefixIcon: const Icon(Icons.person_outline),
+            ),
+          ),
+          const Gap(32),
+          const Text(
+            'Preferred Currency',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const Gap(8),
+          DropdownButtonFormField<CurrencyOption>(
+            value: selectedCurrency,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              prefixIcon: const Icon(Icons.payments_outlined),
+            ),
+            items: currencyOptions.map((opt) {
+              return DropdownMenuItem(
+                value: opt,
+                child: Text('${opt.symbol} ${opt.code} (${opt.name})'),
+              );
+            }).toList(),
+            onChanged: onCurrencyChanged,
           ),
         ],
       ),

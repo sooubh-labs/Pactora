@@ -96,7 +96,7 @@ class _TimelineItem extends StatelessWidget {
       subtitle = event.iLent ? 'You lent this item' : 'You borrowed this item';
       route = '/borrow/${event.id}';
     } else if (event.runtimeType.toString().contains('MoneyRecord')) {
-      icon = Icons.currency_rupee;
+      icon = Icons.payments_outlined;
       color = event.iOwe ? Colors.red : Colors.green;
       title = 'Money: ${event.currency} ${event.amount}';
       subtitle = event.iOwe ? 'You owe this amount' : 'This amount is owed to you';

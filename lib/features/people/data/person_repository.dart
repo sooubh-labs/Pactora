@@ -17,9 +17,9 @@ class PersonRepository {
     return await _db.persons.get(id);
   }
 
-  Future<void> savePerson(Person person) async {
-    await _db.writeTxn(() async {
-      await _db.persons.put(person);
+  Future<int> savePerson(Person person) async {
+    return await _db.writeTxn(() async {
+      return await _db.persons.put(person);
     });
   }
 

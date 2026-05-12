@@ -78,12 +78,19 @@ class _PersonHeader extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
-          PersonAvatar(name: person.name, radius: 40),
+          PersonAvatar(name: person.name, radius: 40, avatarPath: person.avatarPath),
           const Gap(16),
           Text(
             person.name,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
+          if (person.email != null) ...[
+            const Gap(4),
+            Text(
+              person.email!,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
           if (person.phone != null) ...[
             const Gap(4),
             Text(

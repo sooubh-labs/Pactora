@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class PersonAvatar extends StatelessWidget {
   final String name;
@@ -14,12 +15,19 @@ class PersonAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (avatarPath != null) {
-      // Handle local image file
-      // return CircleAvatar(radius: radius, backgroundImage: FileImage(File(avatarPath!)));
+    if (avatarPath != null && avatarPath!.isNotEmpty) {
+      final file = File(avatarPath!);
+      if (file.existsSync()) {
+        return CircleAvatar(
+          radius: radius,
+          backgroundImage: FileImage(file),
+        );
+      }
     }
 
-    final initials = name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
+    final initials = name.isNotEmpty 
+        ? name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        : '?';
     
     return CircleAvatar(
       radius: radius,

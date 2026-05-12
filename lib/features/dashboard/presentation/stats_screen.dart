@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'stats_provider.dart';
 import '../../promises/domain/promise_enums.dart';
 import '../../../core/constants/category_constants.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -12,6 +13,7 @@ class StatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(pactoraStatsProvider);
+    final prefs = ref.watch(userPreferencesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Statistics & Reports')),
@@ -21,7 +23,7 @@ class StatsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOverviewCards(stats),
+              _buildOverviewCards(stats, prefs.currencySymbol),
               const Gap(24),
               const Text('Promise Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const Gap(16),
@@ -39,7 +41,7 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildOverviewCards(PactoraStats stats) {
+  Widget _buildOverviewCards(PactoraStats stats, String currencySymbol) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -50,8 +52,8 @@ class StatsScreen extends ConsumerWidget {
       children: [
         _StatCard(label: 'Total Promises', value: stats.totalPromises.toString(), color: Colors.blue),
         _StatCard(label: 'Completion Rate', value: '${stats.completionRate.toStringAsFixed(1)}%', color: Colors.green),
-        _StatCard(label: 'Owed to Me', value: '₹${stats.totalMoneyOwedToMe.toStringAsFixed(0)}', color: Colors.teal),
-        _StatCard(label: 'I Owe', value: '₹${stats.totalMoneyIOwe.toStringAsFixed(0)}', color: Colors.red),
+        _StatCard(label: 'Owed to Me', value: '$currencySymbol${stats.totalMoneyOwedToMe.toStringAsFixed(0)}', color: Colors.teal),
+        _StatCard(label: 'I Owe', value: '$currencySymbol${stats.totalMoneyIOwe.toStringAsFixed(0)}', color: Colors.red),
       ],
     );
   }

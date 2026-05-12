@@ -45,7 +45,7 @@ class SearchScreen extends ConsumerWidget {
               if (results.people.isNotEmpty) ...[
                 const _SearchHeader(title: 'PEOPLE'),
                 ...results.people.map((p) => ListTile(
-                  leading: PersonAvatar(name: p.name, radius: 16),
+                  leading: PersonAvatar(name: p.name, radius: 16, avatarPath: p.avatarPath),
                   title: Text(p.name),
                   onTap: () => context.push('/people/${p.id}'),
                 )),
@@ -61,7 +61,7 @@ class SearchScreen extends ConsumerWidget {
               if (results.records.isNotEmpty) ...[
                 const _SearchHeader(title: 'MONEY'),
                 ...results.records.map((r) => ListTile(
-                  leading: const Icon(Icons.currency_rupee),
+                  leading: const Icon(Icons.payments_outlined),
                   title: Text('${r.currency} ${r.amount}'),
                   subtitle: r.description != null ? Text(r.description!) : null,
                   onTap: () => context.push('/money/${r.id}'),

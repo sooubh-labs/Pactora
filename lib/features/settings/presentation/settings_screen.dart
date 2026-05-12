@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/isar_service.dart';
 import '../../../core/services/backup_service.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = ref.watch(userPreferencesProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -50,6 +54,17 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const Divider(),
+          const _SettingsHeader(title: 'Preferences'),
+          ListTile(
+            leading: const Icon(Icons.payments_outlined),
+            title: const Text('Currency'),
+            trailing: Text(
+              '${prefs.currencySymbol} ${prefs.currencyCode}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onTap: () => _showCurrencyDialog(context, ref),
+          ),
+          const Divider(),
           const _SettingsHeader(title: 'Appearance'),
           ListTile(
             leading: const Icon(Icons.brightness_6),
@@ -65,6 +80,33 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _showClearDataDialog(context),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showCurrencyDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Currency'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: currencyOptions.length,
+            itemBuilder: (context, index) {
+              final opt = currencyOptions[index];
+              return ListTile(
+                title: Text('${opt.symbol} ${opt.code}'),
+                subtitle: Text(opt.name),
+                onTap: () {
+                  ref.read(userPreferencesProvider.notifier).updateCurrency(opt.symbol, opt.code);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

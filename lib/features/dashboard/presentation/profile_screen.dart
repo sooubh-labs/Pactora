@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/image_service.dart';
+import '../../../core/providers/user_preferences_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -16,32 +16,45 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _bioController = TextEditingController();
   File? _profileImage;
+  CurrencyOption? _selectedCurrency;
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _nameController.text = prefs.getString('profile_name') ?? 'User Name';
-      _emailController.text = prefs.getString('profile_email') ?? 'user@example.com';
-      final imagePath = prefs.getString('profile_image');
-      if (imagePath != null) {
-        _profileImage = File(imagePath);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(userPreferencesProvider);
+      _nameController.text = prefs.name;
+      _emailController.text = prefs.email;
+      _phoneController.text = prefs.phone;
+      _bioController.text = prefs.bio;
+      if (prefs.profileImagePath.isNotEmpty) {
+        _profileImage = File(prefs.profileImagePath);
       }
+      _selectedCurrency = currencyOptions.firstWhere(
+        (opt) => opt.code == prefs.currencyCode,
+        orElse: () => currencyOptions.first,
+      );
+      setState(() {});
     });
   }
 
   Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_name', _nameController.text);
-    await prefs.setString('profile_email', _emailController.text);
-    if (_profileImage != null) {
-      await prefs.setString('profile_image', _profileImage!.path);
+    await ref.read(userPreferencesProvider.notifier).updateProfile(
+      name: _nameController.text,
+      email: _emailController.text,
+      phone: _phoneController.text,
+      bio: _bioController.text,
+      profileImagePath: _profileImage?.path,
+    );
+    
+    if (_selectedCurrency != null) {
+      await ref.read(userPreferencesProvider.notifier).updateCurrency(
+        _selectedCurrency!.symbol,
+        _selectedCurrency!.code,
+      );
     }
     
     if (mounted) {
@@ -103,6 +116,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
+    _bioController.dispose();
     super.dispose();
   }
 
@@ -170,6 +185,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               controller: _emailController,
               icon: Icons.email_outlined,
             ),
+            const SizedBox(height: 24),
+
+            // Phone Field
+            _buildTextField(
+              label: 'Phone Number',
+              controller: _phoneController,
+              icon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 24),
+
+            // Bio Field
+            _buildTextField(
+              label: 'Bio',
+              controller: _bioController,
+              icon: Icons.info_outline_rounded,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+
+            // Currency Dropdown
+            _buildDropdown<CurrencyOption>(
+              label: 'Preferred Currency',
+              value: _selectedCurrency,
+              items: currencyOptions,
+              icon: Icons.payments_outlined,
+              onChanged: (val) => setState(() => _selectedCurrency = val),
+              itemLabel: (opt) => '${opt.symbol} ${opt.code} (${opt.name})',
+            ),
             const SizedBox(height: 48),
 
             // Save Button
@@ -194,6 +238,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String label,
     required TextEditingController controller,
     required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,6 +268,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: TextField(
             controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -231,6 +279,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               prefixIcon: Icon(icon, color: AppColors.primary.withOpacity(0.6)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required IconData icon,
+    required ValueChanged<T?> onChanged,
+    required String Function(T) itemLabel,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(color: Colors.black.withOpacity(0.05)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<T>(
+              value: value,
+              items: items.map((item) {
+                return DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(itemLabel(item)),
+                );
+              }).toList(),
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                prefixIcon: Icon(icon, color: AppColors.primary.withOpacity(0.6)),
+                border: InputBorder.none,
+              ),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ),

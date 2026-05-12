@@ -122,7 +122,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const Text('MONEY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
           ...records.map((r) => ListTile(
                 title: Text('${r.currency} ${r.amount}'),
-                leading: const Icon(Icons.currency_rupee),
+                leading: const Icon(Icons.payments_outlined),
                 onTap: () => context.push('/money/${r.id}'),
               )),
         ],
