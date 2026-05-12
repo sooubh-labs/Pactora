@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../domain/money_model.dart';
 import '../../promises/domain/promise_enums.dart';
@@ -219,13 +220,21 @@ class _RecordList extends ConsumerWidget {
   }
 }
 
-class _RecordCard extends ConsumerWidget {
+class _RecordCard extends ConsumerStatefulWidget {
   final MoneyRecord record;
 
   const _RecordCard({required this.record});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RecordCard> createState() => _RecordCardState();
+}
+
+class _RecordCardState extends ConsumerState<_RecordCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final record = widget.record;
     final isOverdue = record.dueDate != null && record.dueDate!.isBefore(DateTime.now()) && record.status != MoneyStatus.paid;
     
     // Determine card accent and background based on status
@@ -273,8 +282,16 @@ class _RecordCard extends ConsumerWidget {
       ) : null,
       child: GestureDetector(
         onTap: () => context.push('/money/${record.id}'),
+        onVerticalDragEnd: (details) {
+          if (details.primaryVelocity! > 100) {
+            setState(() => _isExpanded = true);
+          } else if (details.primaryVelocity! < -100) {
+            setState(() => _isExpanded = false);
+          }
+        },
         behavior: HitTestBehavior.opaque,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(32),
@@ -304,67 +321,105 @@ class _RecordCard extends ConsumerWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar mock (initials)
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: iconBgColor,
-                        child: Text(
-                          'MT', // Mock initials
-                          style: TextStyle(
-                            color: accentColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Mike Thompson', // Mock person name
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: record.status == MoneyStatus.paid ? AppColors.textSecondary : AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              record.description ?? 'No description',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Row(
                         children: [
-                          Text(
-                            '${record.iOwe ? '-' : '+'}\$${record.amount.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
+                          // Avatar mock (initials)
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: iconBgColor,
+                            child: Text(
+                              'MT', // Mock initials
+                              style: TextStyle(
+                                color: accentColor,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          _StatusChip(status: record.status, isOverdue: isOverdue),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Mike Thompson', // Mock person name
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: record.status == MoneyStatus.paid ? AppColors.textSecondary : AppColors.textPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  record.dueDate != null ? 'Due: ${DateFormat('MMM d, yyyy').format(record.dueDate!)}' : 'No due date',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${record.iOwe ? '-' : '+'}\$${record.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: accentColor,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  _StatusChip(status: record.status, isOverdue: isOverdue),
+                                  if (record.description?.isNotEmpty == true)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: GestureDetector(
+                                        onTap: () => setState(() => _isExpanded = !_isExpanded),
+                                        child: Icon(
+                                          _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                          color: AppColors.textTertiary,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ],
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: _isExpanded && record.description?.isNotEmpty == true
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 16.0, left: 64.0),
+                                child: Text(
+                                  record.description!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
                       ),
                     ],
                   ),

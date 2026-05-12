@@ -219,13 +219,21 @@ class _ItemList extends ConsumerWidget {
   }
 }
 
-class _ItemCard extends ConsumerWidget {
+class _ItemCard extends ConsumerStatefulWidget {
   final BorrowItem item;
 
   const _ItemCard({required this.item});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ItemCard> createState() => _ItemCardState();
+}
+
+class _ItemCardState extends ConsumerState<_ItemCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
     final isOverdue = item.expectedReturn != null && item.expectedReturn!.isBefore(DateTime.now()) && item.status == ItemStatus.active;
     
     // Determine card accent and background based on status
@@ -273,8 +281,16 @@ class _ItemCard extends ConsumerWidget {
       ) : null,
       child: GestureDetector(
         onTap: () => context.push('/borrow/${item.id}'),
+        onVerticalDragEnd: (details) {
+          if (details.primaryVelocity! > 100) {
+            setState(() => _isExpanded = true);
+          } else if (details.primaryVelocity! < -100) {
+            setState(() => _isExpanded = false);
+          }
+        },
         behavior: HitTestBehavior.opaque,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(32),
@@ -304,58 +320,90 @@ class _ItemCard extends ConsumerWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Avatar mock (initials)
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: iconBgColor,
-                          child: Text(
-                            'SJ', // Mock initials
-                            style: TextStyle(
-                              color: accentColor,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                item.name,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.iLent ? 'Lent to someone' : 'Borrowed from someone',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Row(
                           children: [
-                            _StatusChip(status: item.status, isOverdue: isOverdue),
+                            // Avatar mock (initials)
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: iconBgColor,
+                              child: Text(
+                                'SJ', // Mock initials
+                                style: TextStyle(
+                                  color: accentColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item.iLent ? 'Lent to someone' : 'Borrowed from someone',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _StatusChip(status: item.status, isOverdue: isOverdue),
+                                const SizedBox(height: 8),
+                                if (item.notes?.isNotEmpty == true)
+                                  GestureDetector(
+                                    onTap: () => setState(() => _isExpanded = !_isExpanded),
+                                    child: Icon(
+                                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                      color: AppColors.textTertiary,
+                                      size: 20,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
+                        ),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: _isExpanded && item.notes?.isNotEmpty == true
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 16.0, left: 64.0),
+                                  child: Text(
+                                    item.notes!,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
                         ),
                       ],
                     ),

@@ -219,13 +219,44 @@ class _PromiseList extends ConsumerWidget {
   }
 }
 
-class _PromiseCard extends ConsumerWidget {
+class _PromiseCard extends ConsumerStatefulWidget {
   final Promise promise;
 
   const _PromiseCard({required this.promise});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_PromiseCard> createState() => _PromiseCardState();
+}
+
+class _PromiseCardState extends ConsumerState<_PromiseCard> {
+  bool _isExpanded = false;
+
+  IconData _getCategoryIcon(PromiseCategory category) {
+    switch (category) {
+      case PromiseCategory.money: return Icons.attach_money_rounded;
+      case PromiseCategory.task: return Icons.check_circle_outline_rounded;
+      case PromiseCategory.meeting: return Icons.groups_rounded;
+      case PromiseCategory.callback: return Icons.phone_callback_rounded;
+      case PromiseCategory.delivery: return Icons.local_shipping_rounded;
+      case PromiseCategory.document: return Icons.description_rounded;
+      case PromiseCategory.errand: return Icons.shopping_bag_rounded;
+      case PromiseCategory.study: return Icons.menu_book_rounded;
+      case PromiseCategory.personal: return Icons.person_rounded;
+      default: return Icons.more_horiz_rounded;
+    }
+  }
+
+  Color _getPriorityColor(Priority priority) {
+    switch (priority) {
+      case Priority.high: return AppColors.error;
+      case Priority.medium: return AppColors.warning;
+      case Priority.low: return AppColors.success;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final promise = widget.promise;
     final isOverdue = promise.dueDate != null && promise.dueDate!.isBefore(DateTime.now()) && promise.status == PromiseStatus.pending;
     
     // Determine card accent and background based on status
@@ -272,8 +303,16 @@ class _PromiseCard extends ConsumerWidget {
       ) : null,
       child: GestureDetector(
         onTap: () => context.push('/promises/${promise.id}'),
+        onVerticalDragEnd: (details) {
+          if (details.primaryVelocity! > 100) {
+            setState(() => _isExpanded = true);
+          } else if (details.primaryVelocity! < -100) {
+            setState(() => _isExpanded = false);
+          }
+        },
         behavior: HitTestBehavior.opaque,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(32),
@@ -303,55 +342,108 @@ class _PromiseCard extends ConsumerWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar mock (if person ID was resolved, but we use initials or generic avatar here for simplicity to match design)
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: iconBgColor,
-                        child: Icon(Icons.person, color: accentColor, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              promise.title,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
-                                decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
+                      Row(
+                        children: [
+                          // Category Icon
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: iconBgColor,
+                            child: Icon(_getCategoryIcon(promise.category), color: accentColor, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
-                                      fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        promise.title,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: promise.status == PromiseStatus.completed ? AppColors.textSecondary : AppColors.textPrimary,
+                                          decoration: promise.status == PromiseStatus.completed ? TextDecoration.lineThrough : null,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    const SizedBox(width: 8),
+                                    if (promise.status != PromiseStatus.completed)
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: _getPriorityColor(promise.priority),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        promise.dueDate != null ? 'Due: ${DateFormat('E, MMM d - h:mm a').format(promise.dueDate!)}' : 'No date',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: isOverdue ? AppColors.overdueText : AppColors.textSecondary,
+                                          fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _StatusChip(status: promise.status, isOverdue: isOverdue),
+                              const SizedBox(height: 8),
+                              if (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true)
+                                GestureDetector(
+                                  onTap: () => setState(() => _isExpanded = !_isExpanded),
+                                  child: Icon(
+                                    _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                    color: AppColors.textTertiary,
+                                    size: 20,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      _StatusChip(status: promise.status, isOverdue: isOverdue),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: _isExpanded && (promise.description?.isNotEmpty == true || promise.notes?.isNotEmpty == true)
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 16.0, left: 64.0),
+                                child: Text(
+                                  promise.description?.isNotEmpty == true ? promise.description! : promise.notes!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                     ],
                   ),
                 ),
