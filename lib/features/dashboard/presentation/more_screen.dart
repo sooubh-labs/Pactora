@@ -167,22 +167,26 @@ class MoreScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'User Name', // In design it's "Alex Mercer"
-                  style: TextStyle(
+                Text(
+                  _name,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'user@example.com',
+                  _email,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -190,6 +194,34 @@ class MoreScreen extends ConsumerWidget {
           IconButton(
             onPressed: () => context.push('/profile'),
             icon: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenuData {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final Color bgColor;
+  final VoidCallback onTap;
+
+  _MenuData({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.bgColor,
+    required this.onTap,
+  });
+}
+rs.white, size: 20),
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withOpacity(0.15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

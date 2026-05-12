@@ -56,7 +56,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
         title: Text(widget.record == null ? 'New Money Record' : 'Edit Record'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 140.0),
         child: Form(
           key: _formKey,
           child: Column(

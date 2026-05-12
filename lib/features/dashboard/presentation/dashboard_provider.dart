@@ -60,7 +60,7 @@ Future<DashboardSummary> dashboardSummary(DashboardSummaryRef ref) async {
       id: p.id,
       type: ActivityType.promise,
       title: p.title,
-      subtitle: p.status == PromiseStatus.completed ? 'Completed' : (p.dueDate != null ? 'Due: \${p.dueDate!.toLocal().toString().split(' ')[0]}' : 'No Date'),
+      subtitle: p.status == PromiseStatus.completed ? 'Completed' : (p.dueDate != null ? 'Due: ${p.dueDate!.toLocal().toString().split(' ')[0]}' : 'No Date'),
       date: p.dueDate ?? p.createdAt,
       isCompleted: p.status == PromiseStatus.completed,
     ));
@@ -71,8 +71,8 @@ Future<DashboardSummary> dashboardSummary(DashboardSummaryRef ref) async {
     activityList.add(ActivityItemData(
       id: i.id,
       type: ActivityType.borrow,
-      title: 'Borrowed: \${i.name}',
-      subtitle: i.status == ItemStatus.returned ? 'Returned' : (i.expectedReturn != null ? 'Due: \${i.expectedReturn!.toLocal().toString().split(' ')[0]}' : 'Active'),
+      title: 'Borrowed: ${i.name}',
+      subtitle: i.status == ItemStatus.returned ? 'Returned' : (i.expectedReturn != null ? 'Due: ${i.expectedReturn!.toLocal().toString().split(' ')[0]}' : 'Active'),
       date: i.expectedReturn ?? i.createdAt,
       isCompleted: i.status == ItemStatus.returned,
     ));
@@ -84,7 +84,7 @@ Future<DashboardSummary> dashboardSummary(DashboardSummaryRef ref) async {
       id: r.id,
       type: ActivityType.money,
       title: r.description?.isNotEmpty == true ? r.description! : (r.iOwe ? 'I owe money' : 'Owed to me'),
-      subtitle: r.status == MoneyStatus.paid ? 'Settled' : 'Amount: \$\${r.amount.toStringAsFixed(0)}',
+      subtitle: r.status == MoneyStatus.paid ? 'Settled' : 'Amount: \$${r.amount.toStringAsFixed(0)}',
       date: r.dueDate ?? r.createdAt,
       isCompleted: r.status == MoneyStatus.paid,
     ));
