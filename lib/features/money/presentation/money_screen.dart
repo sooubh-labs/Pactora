@@ -282,13 +282,6 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
       ) : null,
       child: GestureDetector(
         onTap: () => context.push('/money/${record.id}'),
-        onVerticalDragEnd: (details) {
-          if (details.primaryVelocity! > 100) {
-            setState(() => _isExpanded = true);
-          } else if (details.primaryVelocity! < -100) {
-            setState(() => _isExpanded = false);
-          }
-        },
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),

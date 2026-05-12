@@ -97,7 +97,7 @@ class DashboardScreen extends ConsumerWidget {
             child: IconButton(
               icon: const Icon(Icons.notifications_none_rounded, size: 28),
               color: AppColors.primary,
-              onPressed: () {},
+              onPressed: () => context.push('/timeline'),
             ),
           ),
         ],

@@ -54,7 +54,7 @@ class _PromisesScreenState extends ConsumerState<PromisesScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {},
+            onPressed: () => context.push('/timeline'),
           ),
           const SizedBox(width: 8),
         ],
@@ -301,13 +301,6 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
       ) : null,
       child: GestureDetector(
         onTap: () => context.push('/promises/${promise.id}'),
-        onVerticalDragEnd: (details) {
-          if (details.primaryVelocity! > 500) {
-            setState(() => _isExpanded = true);
-          } else if (details.primaryVelocity! < -500) {
-            setState(() => _isExpanded = false);
-          }
-        },
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
