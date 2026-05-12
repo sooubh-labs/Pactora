@@ -66,7 +66,7 @@ class MoreScreen extends ConsumerWidget {
                 onTap: () => context.push('/settings'),
               ),
             ]),
-            const SizedBox(height: 100), // padding for floating nav
+            const SizedBox(height: 140), // padding for floating nav
           ],
         ),
       ),

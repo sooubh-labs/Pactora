@@ -51,7 +51,7 @@ class MoneyScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _RecordList(records: records),
-              const SizedBox(height: 100), // padding for floating nav
+              const SizedBox(height: 140), // padding for floating nav
             ],
           ),
         );
@@ -236,22 +236,25 @@ class _RecordCard extends ConsumerWidget {
           ),
         ],
       ) : null,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      child: GestureDetector(
+        onTap: () => context.push('/money/${record.id}'),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.03),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               // Left Accent Border
               Container(
                 width: 6,

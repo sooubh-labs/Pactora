@@ -27,7 +27,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('Edit Profile'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

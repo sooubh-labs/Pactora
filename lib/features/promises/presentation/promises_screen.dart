@@ -168,7 +168,7 @@ class _PromiseList extends ConsumerWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 100), // Bottom padding for floating nav
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 140), // Bottom padding for floating nav
       itemCount: promises.length,
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
@@ -230,22 +230,25 @@ class _PromiseCard extends ConsumerWidget {
           ),
         ],
       ) : null,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      child: GestureDetector(
+        onTap: () => context.push('/promises/${promise.id}'),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               // Left Accent Border
               Container(
                 width: 6,
