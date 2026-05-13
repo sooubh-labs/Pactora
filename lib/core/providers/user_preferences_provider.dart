@@ -9,6 +9,7 @@ class UserPreferences {
   final String profileImagePath;
   final String currencySymbol;
   final String currencyCode;
+  final bool isPremium;
 
   UserPreferences({
     required this.name,
@@ -18,6 +19,7 @@ class UserPreferences {
     required this.profileImagePath,
     required this.currencySymbol,
     required this.currencyCode,
+    required this.isPremium,
   });
 
   UserPreferences copyWith({
@@ -28,6 +30,7 @@ class UserPreferences {
     String? profileImagePath,
     String? currencySymbol,
     String? currencyCode,
+    bool? isPremium,
   }) {
     return UserPreferences(
       name: name ?? this.name,
@@ -37,6 +40,7 @@ class UserPreferences {
       profileImagePath: profileImagePath ?? this.profileImagePath,
       currencySymbol: currencySymbol ?? this.currencySymbol,
       currencyCode: currencyCode ?? this.currencyCode,
+      isPremium: isPremium ?? this.isPremium,
     );
   }
 }
@@ -49,6 +53,7 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
   static const _keyImage = 'profile_image';
   static const _keyCurrencySymbol = 'currency_symbol';
   static const _keyCurrencyCode = 'currency_code';
+  static const _keyPremium = 'is_premium';
 
   @override
   UserPreferences build() {
@@ -63,6 +68,7 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       profileImagePath: '',
       currencySymbol: '₹',
       currencyCode: 'INR',
+      isPremium: false,
     );
   }
 
@@ -76,6 +82,7 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       profileImagePath: prefs.getString(_keyImage) ?? '',
       currencySymbol: prefs.getString(_keyCurrencySymbol) ?? '₹',
       currencyCode: prefs.getString(_keyCurrencyCode) ?? 'INR',
+      isPremium: prefs.getBool(_keyPremium) ?? false,
     );
   }
 
@@ -112,10 +119,23 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       currencyCode: code,
     );
   }
+
+  Future<void> updatePremiumStatus(bool isPremium) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyPremium, isPremium);
+
+    state = state.copyWith(
+      isPremium: isPremium,
+    );
+  }
 }
 
 final userPreferencesProvider = NotifierProvider<UserPreferencesNotifier, UserPreferences>(() {
   return UserPreferencesNotifier();
+});
+
+final isPremiumProvider = Provider<bool>((ref) {
+  return ref.watch(userPreferencesProvider).isPremium;
 });
 
 class CurrencyOption {
