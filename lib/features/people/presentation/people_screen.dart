@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ads/banner_ad_widget.dart';
 import '../../../shared/widgets/person_avatar.dart';
 import '../domain/person_model.dart';
 import 'person_provider.dart';
@@ -67,7 +68,18 @@ class PeopleScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             itemCount: people.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) {
+              if ((index + 1) % 5 == 0) {
+                return const Column(
+                  children: [
+                    SizedBox(height: 16),
+                    BannerAdWidget(),
+                    SizedBox(height: 16),
+                  ],
+                );
+              }
+              return const SizedBox(height: 16);
+            },
             itemBuilder: (context, index) {
               final person = people[index];
               return _PersonCard(person: person);

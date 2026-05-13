@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../promises/presentation/promise_provider.dart';
 import '../../borrow/presentation/item_provider.dart';
 import '../../money/presentation/money_provider.dart';
+import '../../../core/ads/banner_ad_widget.dart';
 
 class ArchiveScreen extends ConsumerWidget {
   const ArchiveScreen({super.key});
@@ -69,8 +70,20 @@ class _ArchivedList<T> extends StatelessWidget {
         if (items.isEmpty) {
           return const Center(child: Text('No archived items'));
         }
-        return ListView.builder(
+        return ListView.separated(
           itemCount: items.length,
+          separatorBuilder: (context, index) {
+            if ((index + 1) % 5 == 0) {
+              return const Column(
+                children: [
+                  Divider(),
+                  BannerAdWidget(),
+                  Divider(),
+                ],
+              );
+            }
+            return const Divider();
+          },
           itemBuilder: (context, index) {
             final item = items[index];
             return ListTile(

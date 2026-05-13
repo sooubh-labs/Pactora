@@ -1,0 +1,50 @@
+<h2>Pactora Premium Design</h2>
+<p class="subtitle">Mockup for the upgrade experience</p>
+
+<div class="mockup">
+  <div class="mockup-header">Premium Upgrade Screen</div>
+  <div class="mockup-body" style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px;">
+    <div style="font-size: 48px; margin-bottom: 10px;">💎</div>
+    <h3 style="margin: 0; color: #333;">Pactora Premium</h3>
+    <p style="color: #666; margin-bottom: 24px;">One-time purchase for a cleaner experience</p>
+    
+    <div style="text-align: left; background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Remove all banner ads</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Support independent development</span>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Keep premium features forever</span>
+      </div>
+    </div>
+
+    <button class="mock-button" style="width: 100%; padding: 16px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+      Upgrade Now - $1.99
+    </button>
+    
+    <p style="margin-top: 16px; font-size: 12px; color: #999; cursor: pointer;">Restore Purchase</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Implementation Details</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h4>Banner Injection Logic</h4>
+        <p>Uses <code>ListView.separated</code> or <code>ListView.builder</code> with index-based math <code>(index % 5 == 0)</code> to insert ad cards.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4>IAP Security</h4>
+        <p>Local persistence of premium state for offline use. Verification on startup via store stream.</p>
+      </div>
+    </div>
+  </div>
+</div>

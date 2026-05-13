@@ -1,0 +1,73 @@
+<h2>Monetization Architecture</h2>
+<p class="subtitle">Proposed structure for AdMob and In-App Purchase integration</p>
+
+<div class="section">
+  <h3>Core Services</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h4>AdService (lib/core/ads/)</h4>
+        <p>Manages MobileAds SDK lifecycle. Lazy loads banner units. Global singleton.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4>IapService (lib/core/iap/)</h4>
+        <p>Handles Google Play billing, purchase verification, and restoration.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4>PremiumProvider (Riverpod)</h4>
+        <p>Reactively manages premium status. Persistent via Isar/Prefs. Controls ad visibility app-wide.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Ad Placement Strategy</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="list-feed" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h4>List/Feed Injections</h4>
+        <p>Every 5th item in Promise list, Timeline, and Archive.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="detail-banner" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h4>Detail Screen Bottom Banner</h4>
+        <p>Sticky banner at the bottom of Promise Detail and Person Detail.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="iap-upsell" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h4>Smart Upsell</h4>
+        <p>Show "Go Premium" button in Settings and after X ads viewed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Approaches</h3>
+  <div class="options">
+    <div class="option" data-choice="approach-simple" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h4>Standard Integration (Recommended)</h4>
+        <p>Banner ads in feeds + Lifetime IAP to remove ads. Simple, clean, minimal UX impact.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="approach-aggressive" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h4>Aggressive Monetization</h4>
+        <p>Includes Interstitial ads on "Promise Created" + App Open ads. Higher revenue, higher friction.</p>
+      </div>
+    </div>
+  </div>
+</div>

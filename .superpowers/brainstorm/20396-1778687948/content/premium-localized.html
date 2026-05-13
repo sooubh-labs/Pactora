@@ -1,0 +1,50 @@
+<h2>Pactora Premium Design (Localized)</h2>
+<p class="subtitle">Mockup with dynamic currency support</p>
+
+<div class="mockup">
+  <div class="mockup-header">Premium Upgrade Screen</div>
+  <div class="mockup-body" style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px;">
+    <div style="font-size: 48px; margin-bottom: 10px;">💎</div>
+    <h3 style="margin: 0; color: #333;">Pactora Premium</h3>
+    <p style="color: #666; margin-bottom: 24px;">One-time purchase for a cleaner experience</p>
+    
+    <div style="text-align: left; background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Remove all banner ads</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Support independent development</span>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <span style="color: #28a745; margin-right: 10px;">✓</span>
+        <span>Keep premium features forever</span>
+      </div>
+    </div>
+
+    <button class="mock-button" style="width: 100%; padding: 16px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+      Upgrade Now - <span id="price-tag">₹160</span>
+    </button>
+    
+    <p style="margin-top: 16px; font-size: 12px; color: #999; cursor: pointer;">Restore Purchase</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Currency Localization Logic</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h4>Store-Driven Pricing</h4>
+        <p>Instead of hardcoding, we use the <code>ProductDetails</code> from the Play Store which automatically provides the localized price string (e.g., ₹160, $1.99, €1.89) based on user's store region.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4>User Preference Alignment</h4>
+        <p>If user is offline, we fallback to a formatted price using the <code>currencySymbol</code> from <code>userPreferencesProvider</code>.</p>
+      </div>
+    </div>
+  </div>
+</div>
