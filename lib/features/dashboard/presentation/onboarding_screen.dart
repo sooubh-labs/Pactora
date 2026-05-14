@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/services/data_seed_service.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -66,7 +67,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 itemCount: _pages.length + 1,
                 itemBuilder: (context, index) {
                   if (index < _pages.length) {
-                    return _OnboardingPage(data: _pages[index]);
+                    return _OnboardingPage(
+                      data: _pages[index],
+                      isFirstPage: index == 0,
+                    );
                   } else {
                     return _PersonalizationPage(
                       nameController: _nameController,
@@ -93,7 +97,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _currentPage == index ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                          color: _currentPage == index
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outlineVariant,
                         ),
                       ),
                     ),
@@ -128,6 +134,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await ref.read(userPreferencesProvider.notifier).updateProfile(name: _nameController.text.trim());
       await ref.read(userPreferencesProvider.notifier).updateCurrency(_selectedCurrency.symbol, _selectedCurrency.code);
 
+      // Seed initial data for a better first experience
+      await DataSeedService.seed();
+
       if (mounted) context.go('/permissions');
     }
   }
@@ -143,8 +152,9 @@ class OnboardingPageData {
 
 class _OnboardingPage extends StatelessWidget {
   final OnboardingPageData data;
+  final bool isFirstPage;
 
-  const _OnboardingPage({required this.data});
+  const _OnboardingPage({required this.data, this.isFirstPage = false});
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +163,10 @@ class _OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(data.icon, size: 100, color: Theme.of(context).colorScheme.primary),
+          if (isFirstPage)
+            Image.asset('assets/images/app-logo.png', width: 200, height: 200)
+          else
+            Icon(data.icon, size: 100, color: Theme.of(context).colorScheme.primary),
           const Gap(48),
           Text(
             data.title,
@@ -163,7 +176,10 @@ class _OnboardingPage extends StatelessWidget {
           const Gap(16),
           Text(
             data.body,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -196,9 +212,12 @@ class _PersonalizationPage extends StatelessWidget {
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const Gap(8),
-          const Text(
+          Text(
             'Let\'s personalize your experience.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const Gap(48),
           const Text(

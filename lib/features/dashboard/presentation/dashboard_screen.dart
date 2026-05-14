@@ -5,12 +5,64 @@ import 'dart:io';
 import 'dashboard_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/services/guide_service.dart';
+import '../../../shared/widgets/feature_guide.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  final GlobalKey _statsKey = GlobalKey();
+  final GlobalKey _activityKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkGuide();
+  }
+
+  Future<void> _checkGuide() async {
+    final shouldShow = await GuideService.shouldShowGuide();
+    if (shouldShow && mounted) {
+      // Small delay to ensure layout is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFeatureGuide();
+      });
+    }
+  }
+
+  void _showFeatureGuide() {
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) => FeatureGuide(
+        steps: [
+          GuideStep(
+            targetKey: _statsKey,
+            title: 'Your Summary',
+            description: 'Quickly see your pending promises, overdue items, and financial status.',
+          ),
+          GuideStep(
+            targetKey: _activityKey,
+            title: 'Recent Activity',
+            description: 'Track the latest updates to your promises and shared items.',
+          ),
+        ],
+        onComplete: () async {
+          overlayEntry.remove();
+          await GuideService.markGuideShown();
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final prefs = ref.watch(userPreferencesProvider);
 
@@ -28,9 +80,13 @@ class DashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSummaryGrid(summary, context, prefs.currencySymbol),
+                      Container(
+                        key: _statsKey,
+                        child: _buildSummaryGrid(summary, context, prefs.currencySymbol),
+                      ),
                       const SizedBox(height: 24), // Reduced from 32/20
                       Row(
+                        key: _activityKey,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
@@ -43,7 +99,7 @@ class DashboardScreen extends ConsumerWidget {
                           TextButton(
                             onPressed: () => context.push('/timeline'),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+                              foregroundColor: Theme.of(context).colorScheme.primary,
                               textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                               padding: EdgeInsets.zero,
                               visualDensity: VisualDensity.compact,
@@ -93,19 +149,21 @@ class DashboardScreen extends ConsumerWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+              boxShadow: Theme.of(context).brightness == Brightness.light
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  : null,
             ),
             child: IconButton(
               icon: const Icon(Icons.notifications_none_rounded, size: 28),
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
               onPressed: () => context.push('/timeline'),
             ),
           ),
@@ -122,24 +180,30 @@ class DashboardScreen extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: Theme.of(context).brightness == Brightness.light
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             children: [
-              Icon(Icons.search_rounded, color: AppColors.primary.withOpacity(0.6), size: 24),
+              Icon(
+                Icons.search_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                size: 24,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Search promises, people...',
                 style: TextStyle(
-                  color: AppColors.textTertiary.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -307,15 +371,17 @@ class _ActivityItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -355,22 +421,26 @@ class _ActivityItem extends StatelessWidget {
                             children: [
                               Text(
                                 title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                                  Icon(
+                                    Icons.access_time_rounded,
+                                    size: 14,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     subtitle,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: AppColors.textSecondary,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -379,7 +449,10 @@ class _ActivityItem extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary.withOpacity(0.5)),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                        ),
                       ],
                     ),
                   ),
@@ -414,15 +487,17 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -443,7 +518,11 @@ class _StatCard extends StatelessWidget {
                       backgroundColor: bgColor,
                       child: Icon(icon, color: color, size: 20),
                     ),
-                    Icon(Icons.arrow_outward_rounded, size: 18, color: AppColors.textTertiary.withOpacity(0.5)),
+                    Icon(
+                      Icons.arrow_outward_rounded,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    ),
                   ],
                 ),
                 Column(
@@ -451,20 +530,20 @@ class _StatCard extends StatelessWidget {
                   children: [
                     Text(
                       count,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         height: 1.1,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         height: 1.2,
                       ),
                     ),
