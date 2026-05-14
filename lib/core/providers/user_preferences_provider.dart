@@ -113,7 +113,9 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       premiumExpiryDate: expiryStr != null ? DateTime.tryParse(expiryStr) : null,
       promisesAddedCount: prefs.getInt(_keyPromisesAdded) ?? 0,
       promiseLimit: prefs.getInt(_keyPromiseLimit) ?? 10,
-      themeMode: AppThemeMode.values[themeIndex],
+      themeMode: (themeIndex >= 0 && themeIndex < AppThemeMode.values.length)
+          ? AppThemeMode.values[themeIndex]
+          : AppThemeMode.system,
     );
   }
 
