@@ -1,0 +1,62 @@
+<h2>Interactive Onboarding Design Proposal</h2>
+<p class="subtitle">A step-by-step interactive flow to get the user started.</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Step 1: Welcome & Setup</div>
+    <div class="mockup-body">
+      <div style="padding: 20px; text-align: center;">
+        <img src="assets/images/app-logo.png" style="width:100px; margin-bottom:20px;" alt="Logo" onerror="this.style.display='none'">
+        <h3 style="margin-bottom: 10px;">Welcome to Pactora!</h3>
+        <p style="color: #666; margin-bottom: 30px;">Let's get your profile set up so you can start tracking promises.</p>
+        
+        <div style="text-align: left; margin-bottom: 20px;">
+          <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">YOUR NAME</label>
+          <input type="text" class="mock-input" placeholder="e.g. Alex" value="Alex">
+        </div>
+        
+        <div style="text-align: left; margin-bottom: 30px;">
+          <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">PREFERRED CURRENCY</label>
+          <div class="mock-input" style="display:flex; justify-content:space-between;">
+            <span>US Dollar ($)</span>
+            <span>▼</span>
+          </div>
+        </div>
+        
+        <button class="mock-button">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Step 2: First Promise (Interactive)</div>
+    <div class="mockup-body">
+      <div style="padding: 20px;">
+        <h3 style="text-align: center; margin-bottom: 10px;">Add Your First Record</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Let's track something someone owes you or you owe them.</p>
+        
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+          <div style="flex:1; text-align:center; padding:10px; border:2px solid #007AFF; border-radius:8px; color:#007AFF; font-weight:bold;">They owe me</div>
+          <div style="flex:1; text-align:center; padding:10px; border:1px solid #ddd; border-radius:8px; color:#666;">I owe them</div>
+        </div>
+        
+        <input type="text" class="mock-input" placeholder="Who? (e.g. John)" style="margin-bottom:15px;">
+        <input type="text" class="mock-input" placeholder="What? (e.g. $20 for lunch or a Book)" style="margin-bottom:15px;">
+        
+        <button class="mock-button" style="margin-top:20px;">Save & Go to Dashboard</button>
+        <div style="text-align:center; margin-top:15px;">
+          <a href="#" style="color:#999; text-decoration:none; font-size:14px;">Skip for now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 30px;">
+  <h3>How this works:</h3>
+  <ul style="line-height: 1.6;">
+    <li><strong>Step 1</strong> directly asks for the essential preferences (Name and Currency), skipping long reading pages.</li>
+    <li><strong>Step 2</strong> guides them to create their first data entry, functioning as an interactive tutorial for the app's core feature.</li>
+    <li>If they prefer, they can skip Step 2 and go straight to the empty dashboard.</li>
+  </ul>
+</div>

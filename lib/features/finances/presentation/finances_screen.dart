@@ -97,15 +97,17 @@ class _FinancesScreenState extends State<FinancesScreen> {
       child: Container(
         height: 56,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: Theme.of(context).brightness == Brightness.light
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -114,14 +116,18 @@ class _FinancesScreenState extends State<FinancesScreen> {
                 onTap: () => setState(() => _currentIndex = 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _currentIndex == 0 ? AppColors.primary : Colors.transparent,
+                    color: _currentIndex == 0
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(28),
                   ),
                   child: Center(
                     child: Text(
                       'Money',
                       style: TextStyle(
-                        color: _currentIndex == 0 ? Colors.white : AppColors.textPrimary,
+                        color: _currentIndex == 0
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -135,14 +141,18 @@ class _FinancesScreenState extends State<FinancesScreen> {
                 onTap: () => setState(() => _currentIndex = 1),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _currentIndex == 1 ? AppColors.primary : Colors.transparent,
+                    color: _currentIndex == 1
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(28),
                   ),
                   child: Center(
                     child: Text(
                       'Borrow',
                       style: TextStyle(
-                        color: _currentIndex == 1 ? Colors.white : AppColors.textPrimary,
+                        color: _currentIndex == 1
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),

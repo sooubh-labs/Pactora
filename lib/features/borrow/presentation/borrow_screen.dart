@@ -57,32 +57,39 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSummaryCards(lentItems, borrowedItems),
+                    _buildSummaryCards(context, lentItems, borrowedItems),
                     const SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Items',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         PopupMenuButton<BorrowSortType>(
-                          icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
+                          icon: Icon(Icons.sort_rounded, color: Theme.of(context).colorScheme.primary),
+                          color: Theme.of(context).colorScheme.surface,
                           onSelected: (sortType) {
                             setState(() => _currentSort = sortType);
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: BorrowSortType.date,
-                              child: Text('Sort by Urgency (Date)'),
+                              child: Text(
+                                'Sort by Urgency (Date)',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                              ),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: BorrowSortType.name,
-                              child: Text('Sort by Name'),
+                              child: Text(
+                                'Sort by Name',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                              ),
                             ),
                           ],
                         ),
@@ -106,14 +113,15 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
     );
   }
 
-  Widget _buildSummaryCards(int lentItems, int borrowedItems) {
+  Widget _buildSummaryCards(BuildContext context, int lentItems, int borrowedItems) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFFFCE4EC), // Very light pink
+              color: isDark ? const Color(0xFF2D161C) : const Color(0xFFFCE4EC),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
@@ -127,12 +135,12 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
                       child: const Icon(Icons.outbox_rounded, size: 16, color: Color(0xFFD81B60)),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'I Lent',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -140,10 +148,10 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
                 const SizedBox(height: 16),
                 Text(
                   '$lentItems',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -155,7 +163,7 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9), // Very light green
+              color: isDark ? const Color(0xFF162D1C) : const Color(0xFFE8F5E9),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
@@ -169,12 +177,12 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
                       child: const Icon(Icons.move_to_inbox_rounded, size: 16, color: AppColors.success),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'I Borrowed',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -182,10 +190,10 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
                 const SizedBox(height: 16),
                 Text(
                   '$borrowedItems',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -296,15 +304,17 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.03),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: Theme.of(context).brightness == Brightness.light
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.03),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: IntrinsicHeight(
             child: Row(
@@ -353,7 +363,9 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: item.status == ItemStatus.returned ? AppColors.textSecondary : AppColors.textPrimary,
+                                      color: item.status == ItemStatus.returned
+                                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                                          : Theme.of(context).colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -361,9 +373,9 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
                                   const SizedBox(height: 4),
                                   Text(
                                     item.iLent ? 'Lent to someone' : 'Borrowed from someone',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: AppColors.textSecondary,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,

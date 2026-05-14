@@ -68,7 +68,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _pickImage() async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -78,9 +78,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Select Profile Photo',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -141,12 +145,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: CircleAvatar(
                       radius: 60,
-                      backgroundColor: AppColors.primaryLight,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
                       child: _profileImage == null
                           ? const Icon(Icons.person_rounded, size: 60, color: Colors.white)
@@ -159,9 +163,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 3,
+                        ),
                       ),
                       child: const Icon(Icons.camera_alt_rounded, size: 18, color: Colors.white),
                     ),
@@ -246,37 +253,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(color: Colors.black.withOpacity(0.05)),
+            boxShadow: Theme.of(context).brightness == Brightness.light
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            ),
           ),
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: AppColors.primary.withOpacity(0.6)),
+              prefixIcon: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
             ),
@@ -299,30 +313,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(color: Colors.black.withOpacity(0.05)),
+            boxShadow: Theme.of(context).brightness == Brightness.light
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            ),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButtonFormField<T>(
               value: value,
+              dropdownColor: Theme.of(context).colorScheme.surface,
               items: items.map((item) {
                 return DropdownMenuItem<T>(
                   value: item,
@@ -331,13 +350,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               }).toList(),
               onChanged: onChanged,
               decoration: InputDecoration(
-                prefixIcon: Icon(icon, color: AppColors.primary.withOpacity(0.6)),
+                prefixIcon: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),

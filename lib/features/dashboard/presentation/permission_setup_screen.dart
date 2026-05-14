@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/theme/app_colors.dart';
 
 class PermissionSetupScreen extends StatefulWidget {
   const PermissionSetupScreen({super.key});
@@ -23,10 +24,11 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
   Future<void> _checkPermissions() async {
     final notificationStatus = await Permission.notification.status;
     final storageStatus = await Permission.storage.status;
+    final photosStatus = await Permission.photos.status;
 
     setState(() {
       _notificationsGranted = notificationStatus.isGranted;
-      _storageGranted = storageStatus.isGranted;
+      _storageGranted = storageStatus.isGranted || photosStatus.isGranted;
     });
   }
 
@@ -38,9 +40,12 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const Text(
+            Text(
               'Pactora needs a few permissions to work its magic.',
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const Gap(32),
@@ -61,9 +66,12 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen> {
               subtitle: 'Attach photos to borrow items and receipts',
               isGranted: _storageGranted,
               onTap: () async {
-                // On Android 13+, we might need photo permission instead of storage
-                final status = await Permission.storage.request();
-                setState(() => _storageGranted = status.isGranted);
+                // On Android 13+, we need photo permission instead of storage
+                final storageStatus = await Permission.storage.request();
+                final photosStatus = await Permission.photos.request();
+                
+                setState(() => _storageGranted = 
+                  storageStatus.isGranted || photosStatus.isGranted);
               },
             ),
             const Spacer(),
@@ -103,13 +111,33 @@ class _PermissionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
       child: ListTile(
-        leading: Icon(icon, color: isGranted ? Colors.green : null),
-        title: Text(title),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        leading: Icon(
+          icon,
+          color: isGranted ? AppColors.success : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         trailing: isGranted
-            ? const Icon(Icons.check_circle, color: Colors.green)
-            : TextButton(onPressed: onTap, child: const Text('Grant')),
+            ? const Icon(Icons.check_circle, color: AppColors.success)
+            : TextButton(
+                onPressed: onTap,
+                child: const Text('Grant'),
+              ),
       ),
     );
   }

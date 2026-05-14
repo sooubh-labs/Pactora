@@ -33,25 +33,11 @@ class PactoraApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userPrefs = ref.watch(userPreferencesProvider);
 
-    ThemeMode themeMode;
-    switch (userPrefs.themeMode) {
-      case AppThemeMode.light:
-        themeMode = ThemeMode.light;
-        break;
-      case AppThemeMode.dark:
-        themeMode = ThemeMode.dark;
-        break;
-      case AppThemeMode.system:
-        themeMode = ThemeMode.system;
-        break;
-    }
-
     return MaterialApp.router(
       title: 'Pactora',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: router,
     );
   }

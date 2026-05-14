@@ -39,7 +39,11 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.handshake, size: 80, color: Colors.white),
+            Image.asset(
+              'assets/images/app-logo.png',
+              width: 240,
+              height: 240,
+            ),
             const SizedBox(height: 24),
             const Text(
               'Pactora',

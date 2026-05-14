@@ -102,21 +102,23 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
   Widget _buildMenuGroup(List<_MenuData> items) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(36),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         children: items.asMap().entries.map((entry) {
           final int index = entry.key;
           final _MenuData data = entry.value;
-          
+
           return Column(
             children: [
               ListTile(
@@ -129,13 +131,16 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                 ),
                 title: Text(
                   data.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500, 
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary.withOpacity(0.5)),
+                trailing: Icon(
+                  Icons.chevron_right_rounded,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                ),
               ),
               if (index < items.length - 1)
                 Divider(
@@ -143,7 +148,7 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                   thickness: 1,
                   indent: 24,
                   endIndent: 24,
-                  color: AppColors.border.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
                 ),
             ],
           );
@@ -165,13 +170,15 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(36),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
