@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../promises/presentation/promise_provider.dart';
 import '../../borrow/presentation/item_provider.dart';
 import '../../money/presentation/money_provider.dart';
-import '../../../core/ads/banner_ad_widget.dart';
+import '../../../core/ads/ad_list_separator.dart';
 
 class ArchiveScreen extends ConsumerWidget {
   const ArchiveScreen({super.key});
@@ -72,18 +72,10 @@ class _ArchivedList<T> extends StatelessWidget {
         }
         return ListView.separated(
           itemCount: items.length,
-          separatorBuilder: (context, index) {
-            if ((index + 1) % 5 == 0) {
-              return const Column(
-                children: [
-                  Divider(),
-                  BannerAdWidget(),
-                  Divider(),
-                ],
-              );
-            }
-            return const Divider();
-          },
+          separatorBuilder: (context, index) => AdListSeparator(
+            index: index,
+            defaultSeparator: const Divider(),
+          ),
           itemBuilder: (context, index) {
             final item = items[index];
             return ListTile(

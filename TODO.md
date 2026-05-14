@@ -1,6 +1,6 @@
-- [ ] Task 1: Project Setup & Dependencies
-- [ ] Task 2: Core Ad Service
-- [ ] Task 3: Premium State Management
-- [ ] Task 4: Reusable Banner Widget
-- [ ] Task 5: Ad Injection in List Screens
+- [x] Task 1: Project Setup & Dependencies
+- [x] Task 2: Core Ad Service
+- [x] Task 3: Premium State Management
+- [x] Task 4: Reusable Banner Widget
+- [x] Task 5: Ad Injection in List Screens
 - [ ] Task 6: IAP Service & Upgrade UI

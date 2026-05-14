@@ -29,6 +29,7 @@ import '../features/people/presentation/person_detail_screen.dart';
 import '../features/people/presentation/person_provider.dart';
 import '../features/search/presentation/search_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
+import '../features/settings/presentation/premium_screen.dart';
 
 final router = GoRouter(
   initialLocation: '/splash',
@@ -214,6 +215,10 @@ final router = GoRouter(
           builder: (context, state) => const SettingsScreen(),
         ),
         GoRoute(
+          path: '/premium',
+          builder: (context, state) => const PremiumScreen(),
+        ),
+        GoRoute(
           path: '/more',
           builder: (context, state) => const MoreScreen(),
         ),
@@ -225,3 +230,4 @@ final router = GoRouter(
     ),
   ],
 );
+

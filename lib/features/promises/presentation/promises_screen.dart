@@ -8,7 +8,7 @@ import '../domain/promise_model.dart';
 import '../domain/promise_enums.dart';
 import 'promise_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/ads/banner_ad_widget.dart';
+import '../../../core/ads/ad_list_separator.dart';
 import '../../../shared/widgets/horizontal_calendar.dart';
 
 class PromisesScreen extends ConsumerStatefulWidget {
@@ -211,18 +211,7 @@ class _PromiseList extends ConsumerWidget {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 140),
       itemCount: promises.length,
-      separatorBuilder: (context, index) {
-        if ((index + 1) % 5 == 0) {
-          return const Column(
-            children: [
-              SizedBox(height: 16),
-              BannerAdWidget(),
-              SizedBox(height: 16),
-            ],
-          );
-        }
-        return const SizedBox(height: 16);
-      },
+      separatorBuilder: (context, index) => AdListSeparator(index: index),
       itemBuilder: (context, index) {
         return _PromiseCard(promise: promises[index]);
       },

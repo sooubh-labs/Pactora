@@ -9,6 +9,7 @@ import '../../promises/domain/promise_enums.dart';
 import 'money_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/ads/ad_list_separator.dart';
 
 enum MoneySortType { date, amount }
 
@@ -51,47 +52,56 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
           });
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSummaryCards(owedToMe, iOwe, prefs.currencySymbol),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Records',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSummaryCards(owedToMe, iOwe, prefs.currencySymbol),
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Records',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        PopupMenuButton<MoneySortType>(
+                          icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
+                          onSelected: (sortType) {
+                            setState(() => _currentSort = sortType);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: MoneySortType.date,
+                              child: Text('Sort by Urgency (Date)'),
+                            ),
+                            const PopupMenuItem(
+                              value: MoneySortType.amount,
+                              child: Text('Sort by Amount'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  PopupMenuButton<MoneySortType>(
-                    icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
-                    onSelected: (sortType) {
-                      setState(() => _currentSort = sortType);
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: MoneySortType.date,
-                        child: Text('Sort by Urgency (Date)'),
-                      ),
-                      const PopupMenuItem(
-                        value: MoneySortType.amount,
-                        child: Text('Sort by Amount'),
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              _RecordList(records: sortedRecords),
-              const SizedBox(height: 140), // padding for floating nav
-            ],
-          ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: _RecordList(records: sortedRecords),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 140)), // padding for floating nav
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -198,26 +208,27 @@ class _RecordList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (records.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.payments_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
-              const SizedBox(height: 16),
-              Text('No money records found', style: Theme.of(context).textTheme.bodyMedium),
-            ],
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.payments_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+                const SizedBox(height: 16),
+                Text('No money records found', style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return Column(
-      children: records.map((record) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: _RecordCard(record: record),
-      )).toList(),
+    return SliverList.separated(
+      itemCount: records.length,
+      separatorBuilder: (context, index) => AdListSeparator(index: index),
+      itemBuilder: (context, index) => _RecordCard(record: records[index]),
     );
   }
 }

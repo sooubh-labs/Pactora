@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/services/isar_service.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../core/providers/user_preferences_provider.dart';
@@ -17,6 +18,18 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
+          const _SettingsHeader(title: 'Subscription'),
+          ListTile(
+            leading: Icon(
+              Icons.stars_rounded,
+              color: prefs.isPremium ? Colors.amber : Theme.of(context).primaryColor,
+            ),
+            title: Text(prefs.isPremium ? 'Pactora Premium (Active)' : 'Upgrade to Premium'),
+            subtitle: Text(prefs.isPremium ? 'Thank you for your support!' : 'Remove ads and unlock all features'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/premium'),
+          ),
+          const Divider(),
           const _SettingsHeader(title: 'Data & Backup'),
           ListTile(
             leading: const Icon(Icons.download),

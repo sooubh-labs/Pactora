@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import '../../../core/ads/ad_list_separator.dart';
 import '../domain/person_model.dart';
 import 'person_provider.dart';
 import '../../promises/presentation/promise_provider.dart';
@@ -122,8 +123,13 @@ class _PersonPromises extends ConsumerWidget {
     return promisesAsync.when(
       data: (promises) => promises.isEmpty
           ? const Center(child: Text('No promises found'))
-          : ListView.builder(
+          : ListView.separated(
+              padding: const EdgeInsets.only(top: 8),
               itemCount: promises.length,
+              separatorBuilder: (context, index) => AdListSeparator(
+                index: index,
+                defaultSeparator: const Divider(height: 1),
+              ),
               itemBuilder: (context, index) {
                 final promise = promises[index];
                 return ListTile(
@@ -152,8 +158,13 @@ class _PersonItems extends ConsumerWidget {
     return itemsAsync.when(
       data: (items) => items.isEmpty
           ? const Center(child: Text('No items found'))
-          : ListView.builder(
+          : ListView.separated(
+              padding: const EdgeInsets.only(top: 8),
               itemCount: items.length,
+              separatorBuilder: (context, index) => AdListSeparator(
+                index: index,
+                defaultSeparator: const Divider(height: 1),
+              ),
               itemBuilder: (context, index) {
                 final item = items[index];
                 return ListTile(
@@ -180,8 +191,13 @@ class _PersonMoney extends ConsumerWidget {
     return recordsAsync.when(
       data: (records) => records.isEmpty
           ? const Center(child: Text('No money records found'))
-          : ListView.builder(
+          : ListView.separated(
+              padding: const EdgeInsets.only(top: 8),
               itemCount: records.length,
+              separatorBuilder: (context, index) => AdListSeparator(
+                index: index,
+                defaultSeparator: const Divider(height: 1),
+              ),
               itemBuilder: (context, index) {
                 final record = records[index];
                 return ListTile(

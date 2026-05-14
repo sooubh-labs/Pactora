@@ -7,6 +7,7 @@ import '../domain/item_model.dart';
 import '../../promises/domain/promise_enums.dart';
 import 'item_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ads/ad_list_separator.dart';
 
 enum BorrowSortType { date, name }
 
@@ -48,47 +49,56 @@ class _BorrowScreenState extends ConsumerState<BorrowScreen> {
           });
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSummaryCards(lentItems, borrowedItems),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Items',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSummaryCards(lentItems, borrowedItems),
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Items',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        PopupMenuButton<BorrowSortType>(
+                          icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
+                          onSelected: (sortType) {
+                            setState(() => _currentSort = sortType);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: BorrowSortType.date,
+                              child: Text('Sort by Urgency (Date)'),
+                            ),
+                            const PopupMenuItem(
+                              value: BorrowSortType.name,
+                              child: Text('Sort by Name'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  PopupMenuButton<BorrowSortType>(
-                    icon: const Icon(Icons.sort_rounded, color: AppColors.primary),
-                    onSelected: (sortType) {
-                      setState(() => _currentSort = sortType);
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: BorrowSortType.date,
-                        child: Text('Sort by Urgency (Date)'),
-                      ),
-                      const PopupMenuItem(
-                        value: BorrowSortType.name,
-                        child: Text('Sort by Name'),
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              _ItemList(items: sortedItems),
-              const SizedBox(height: 140), // padding for floating nav
-            ],
-          ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: _ItemList(items: sortedItems),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 140)), // padding for floating nav
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -195,26 +205,27 @@ class _ItemList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
-              const SizedBox(height: 16),
-              Text('No items found', style: Theme.of(context).textTheme.bodyMedium),
-            ],
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textTertiary.withOpacity(0.5)),
+                const SizedBox(height: 16),
+                Text('No items found', style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return Column(
-      children: items.map((item) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: _ItemCard(item: item),
-      )).toList(),
+    return SliverList.separated(
+      itemCount: items.length,
+      separatorBuilder: (context, index) => AdListSeparator(index: index),
+      itemBuilder: (context, index) => _ItemCard(item: items[index]),
     );
   }
 }

@@ -7,7 +7,7 @@ import '../../promises/presentation/promise_provider.dart';
 import '../../borrow/presentation/item_provider.dart';
 import '../../money/presentation/money_provider.dart';
 import '../../../core/constants/category_constants.dart';
-import '../../../core/ads/banner_ad_widget.dart';
+import '../../../core/ads/ad_list_separator.dart';
 
 class TimelineScreen extends ConsumerWidget {
   const TimelineScreen({super.key});
@@ -48,18 +48,10 @@ class TimelineScreen extends ConsumerWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: groupedEvents.keys.length,
-      separatorBuilder: (context, index) {
-        if ((index + 1) % 5 == 0) {
-          return const Column(
-            children: [
-              Gap(16),
-              BannerAdWidget(),
-              Gap(16),
-            ],
-          );
-        }
-        return const Gap(16);
-      },
+      separatorBuilder: (context, index) => AdListSeparator(
+        index: index,
+        defaultSeparator: const Gap(16),
+      ),
       itemBuilder: (context, index) {
         final date = groupedEvents.keys.elementAt(index);
         final events = groupedEvents[date]!;
