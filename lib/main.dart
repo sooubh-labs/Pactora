@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/ads/ad_service.dart';
+import 'core/providers/user_preferences_provider.dart';
 import 'core/services/isar_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
@@ -30,12 +31,27 @@ class PactoraApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userPrefs = ref.watch(userPreferencesProvider);
+
+    ThemeMode themeMode;
+    switch (userPrefs.themeMode) {
+      case AppThemeMode.light:
+        themeMode = ThemeMode.light;
+        break;
+      case AppThemeMode.dark:
+        themeMode = ThemeMode.dark;
+        break;
+      case AppThemeMode.system:
+        themeMode = ThemeMode.system;
+        break;
+    }
+
     return MaterialApp.router(
       title: 'Pactora',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.buildLightTheme(),
-      darkTheme: AppTheme.buildDarkTheme(),
-      themeMode: ThemeMode.system,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }
