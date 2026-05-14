@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../../core/theme/app_colors.dart';
 
 class HorizontalCalendar extends StatefulWidget {
   final List<DateTime> activeDates;
@@ -105,6 +104,7 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         itemCount: _dates.length,
         itemBuilder: (context, index) {
+          final theme = Theme.of(context);
           final date = _dates[index];
           final isSelected = _selectedDate != null && isSameDay(date, _selectedDate!);
           final hasActivity = _hasActivity(date);
@@ -126,11 +126,13 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                 duration: const Duration(milliseconds: 200),
                 width: 56, // Reduced from 64
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
+                  color: isSelected ? theme.colorScheme.primary : theme.cardColor,
                   borderRadius: BorderRadius.circular(24), // More rounded pill
                   boxShadow: [
                     BoxShadow(
-                      color: isSelected ? AppColors.primary.withOpacity(0.2) : AppColors.primary.withOpacity(0.04),
+                      color: isSelected 
+                          ? theme.colorScheme.primary.withOpacity(0.2) 
+                          : theme.shadowColor.withOpacity(0.04),
                       blurRadius: isSelected ? 12 : 6,
                       offset: const Offset(0, 4),
                     )
@@ -144,7 +146,9 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                       style: TextStyle(
                         fontSize: 10, // Smaller font
                         letterSpacing: 0.5,
-                        color: isSelected ? Colors.white.withOpacity(0.8) : AppColors.textTertiary,
+                        color: isSelected 
+                            ? theme.colorScheme.onPrimary.withOpacity(0.9) 
+                            : theme.textTheme.labelSmall?.color,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -154,7 +158,9 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                       style: TextStyle(
                         fontSize: 18, // Smaller font
                         fontWeight: FontWeight.w800,
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected 
+                            ? theme.colorScheme.onPrimary 
+                            : theme.textTheme.bodyLarge?.color,
                         height: 1,
                       ),
                     ),
@@ -164,7 +170,9 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                         width: 4,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.white : AppColors.primary,
+                          color: isSelected 
+                              ? theme.colorScheme.onPrimary 
+                              : theme.colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       )

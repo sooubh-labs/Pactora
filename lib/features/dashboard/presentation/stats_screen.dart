@@ -6,6 +6,7 @@ import 'stats_provider.dart';
 import '../../promises/domain/promise_enums.dart';
 import '../../../core/constants/category_constants.dart';
 import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -23,25 +24,26 @@ class StatsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOverviewCards(stats, prefs.currencySymbol),
+              _buildOverviewCards(context, stats, prefs.currencySymbol),
               const Gap(24),
-              const Text('Promise Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Promise Categories', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               const Gap(16),
-              _buildCategoryPieChart(stats),
+              _buildCategoryPieChart(context, stats),
               const Gap(24),
-              const Text('Completion Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Completion Status', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               const Gap(16),
-              _buildStatusPieChart(stats),
+              _buildStatusPieChart(context, stats),
             ],
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('Error: $err', style: Theme.of(context).textTheme.bodyMedium)),
       ),
     );
   }
 
-  Widget _buildOverviewCards(PactoraStats stats, String currencySymbol) {
+  Widget _buildOverviewCards(BuildContext context, PactoraStats stats, String currencySymbol) {
+    final theme = Theme.of(context);
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -50,16 +52,16 @@ class StatsScreen extends ConsumerWidget {
       crossAxisSpacing: 12,
       childAspectRatio: 2,
       children: [
-        _StatCard(label: 'Total Promises', value: stats.totalPromises.toString(), color: Colors.blue),
-        _StatCard(label: 'Completion Rate', value: '${stats.completionRate.toStringAsFixed(1)}%', color: Colors.green),
-        _StatCard(label: 'Owed to Me', value: '$currencySymbol${stats.totalMoneyOwedToMe.toStringAsFixed(0)}', color: Colors.teal),
-        _StatCard(label: 'I Owe', value: '$currencySymbol${stats.totalMoneyIOwe.toStringAsFixed(0)}', color: Colors.red),
+        _StatCard(label: 'Total Promises', value: stats.totalPromises.toString(), color: theme.colorScheme.primary),
+        _StatCard(label: 'Completion Rate', value: '${stats.completionRate.toStringAsFixed(1)}%', color: theme.colorScheme.secondary),
+        _StatCard(label: 'Owed to Me', value: '$currencySymbol${stats.totalMoneyOwedToMe.toStringAsFixed(0)}', color: AppColors.success),
+        _StatCard(label: 'I Owe', value: '$currencySymbol${stats.totalMoneyIOwe.toStringAsFixed(0)}', color: theme.colorScheme.error),
       ],
     );
   }
 
-  Widget _buildCategoryPieChart(PactoraStats stats) {
-    if (stats.categoryDistribution.isEmpty) return const Center(child: Text('No data'));
+  Widget _buildCategoryPieChart(BuildContext context, PactoraStats stats) {
+    if (stats.categoryDistribution.isEmpty) return Center(child: Text('No data', style: Theme.of(context).textTheme.bodyMedium));
 
     final data = stats.categoryDistribution.entries.map((e) {
       final config = CategoryConstants.categories[e.key]!;
@@ -68,7 +70,11 @@ class StatsScreen extends ConsumerWidget {
         title: '${e.value}',
         color: config.color,
         radius: 50,
-        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        titleStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
       );
     }).toList();
 
@@ -86,7 +92,10 @@ class StatsScreen extends ConsumerWidget {
               children: [
                 Container(width: 12, height: 12, color: config.color),
                 const Gap(4),
-                Text(config.label, style: const TextStyle(fontSize: 12)),
+                Text(
+                  config.label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                ),
               ],
             );
           }).toList(),
@@ -95,15 +104,15 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusPieChart(PactoraStats stats) {
-    if (stats.statusDistribution.isEmpty) return const Center(child: Text('No data'));
+  Widget _buildStatusPieChart(BuildContext context, PactoraStats stats) {
+    if (stats.statusDistribution.isEmpty) return Center(child: Text('No data', style: Theme.of(context).textTheme.bodyMedium));
 
     final data = stats.statusDistribution.entries.map((e) {
-      Color color = Colors.grey;
+      Color color = AppColors.textTertiary;
       switch (e.key) {
-        case PromiseStatus.completed: color = Colors.green; break;
-        case PromiseStatus.pending: color = Colors.orange; break;
-        case PromiseStatus.overdue: color = Colors.red; break;
+        case PromiseStatus.completed: color = AppColors.success; break;
+        case PromiseStatus.pending: color = AppColors.warning; break;
+        case PromiseStatus.overdue: color = AppColors.error; break;
         default: break;
       }
       return PieChartSectionData(
@@ -111,7 +120,11 @@ class StatsScreen extends ConsumerWidget {
         title: '${e.value}',
         color: color,
         radius: 50,
-        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        titleStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
       );
     }).toList();
 
@@ -128,15 +141,17 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
+      color: theme.cardTheme.color,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: color)),
             const Gap(4),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(label, style: theme.textTheme.labelSmall),
           ],
         ),
       ),

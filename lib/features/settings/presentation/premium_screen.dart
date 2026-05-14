@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:pactora/core/iap/iap_service.dart';
+import 'package:pactora/core/providers/user_preferences_provider.dart';
 import 'package:pactora/core/theme/app_colors.dart';
 
 class PremiumScreen extends ConsumerStatefulWidget {
@@ -15,24 +17,37 @@ class PremiumScreen extends ConsumerStatefulWidget {
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   List<ProductDetails>? _products;
   bool _isLoading = true;
+  bool _isProcessing = false;
   StreamSubscription<String>? _errorSubscription;
+  StreamSubscription<PurchaseDetails>? _purchaseSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
     _listenToErrors();
+    _listenToPurchases();
   }
 
   @override
   void dispose() {
     _errorSubscription?.cancel();
+    _purchaseSubscription?.cancel();
     super.dispose();
+  }
+
+  void _listenToPurchases() {
+    _purchaseSubscription = ref.read(iapServiceProvider).purchaseStream.listen((purchase) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    });
   }
 
   void _listenToErrors() {
     _errorSubscription = ref.read(iapServiceProvider).errorStream.listen((error) {
       if (mounted) {
+        setState(() => _isProcessing = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error),
@@ -41,6 +56,21 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         );
       }
     });
+  }
+
+  Future<void> _buyPremium(ProductDetails product) async {
+    setState(() => _isProcessing = true);
+    try {
+      await ref.read(iapServiceProvider).buyPremium(product);
+      // Processing will be set to false by the listener or when the screen re-renders on success
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    }
   }
 
   Future<void> _loadProducts() async {
@@ -57,6 +87,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isPremium = ref.watch(isPremiumProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -64,61 +95,116 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Icon(
-              Icons.stars_rounded,
-              size: 80,
-              color: isDark ? theme.colorScheme.secondary : AppColors.primary,
-            ),
-            const Gap(16),
-            Text(
-              'Upgrade to Premium',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
-                  ),
-            ),
-            const Gap(8),
-            Text(
-              'Remove all ads and support the development of Pactora.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
-                  ),
-            ),
-            const Gap(32),
-            _buildBenefitsGrid(context),
-            const Gap(40),
-            Text(
-              'Choose Your Plan',
-              style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const Gap(16),
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              _buildPricingOptions(context),
-            const Gap(32),
-            TextButton(
-              onPressed: () => ref.read(iapServiceProvider).restorePurchases(),
-              child: Text(
-                'Already purchased? Restore Purchase',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (isPremium) _buildPremiumActiveBanner(context),
+                if (isPremium) const Gap(24),
+                Icon(
+                  Icons.stars_rounded,
+                  size: 80,
                   color: isDark ? theme.colorScheme.secondary : AppColors.primary,
                 ),
+                const Gap(16),
+                Text(
+                  isPremium ? 'You are Premium!' : 'Upgrade to Premium',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+                      ),
+                ),
+                const Gap(8),
+                Text(
+                  isPremium 
+                    ? 'Thank you for supporting Pactora. Enjoy your ad-free experience.' 
+                    : 'Remove all ads and support the development of Pactora.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      ),
+                ),
+                const Gap(32),
+                _buildBenefitsGrid(context),
+                if (!isPremium) ...[
+                  const Gap(40),
+                  Text(
+                    'Choose Your Plan',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const Gap(16),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    _buildPricingOptions(context),
+                ],
+                const Gap(32),
+                TextButton(
+                  onPressed: isPremium || _isProcessing 
+                    ? null 
+                    : () => ref.read(iapServiceProvider).restorePurchases(),
+                  child: Text(
+                    isPremium ? 'Purchases Restored' : 'Already purchased? Restore Purchase',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isPremium || _isProcessing 
+                        ? Colors.grey 
+                        : (isDark ? theme.colorScheme.secondary : AppColors.primary),
+                    ),
+                  ),
+                ),
+                const Gap(48),
+              ],
+            ),
+          ),
+          if (_isProcessing)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-            const Gap(48),
-          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumActiveBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: (isDark ? theme.colorScheme.secondary : AppColors.primary).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: (isDark ? theme.colorScheme.secondary : AppColors.primary).withOpacity(0.2),
         ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.verified_rounded,
+            color: isDark ? theme.colorScheme.secondary : AppColors.primary,
+          ),
+          const Gap(12),
+          Expanded(
+            child: Text(
+              'Premium Active',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -211,7 +297,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       price: product.price,
       duration: duration,
       isPopular: isPopular,
-      onTap: () => ref.read(iapServiceProvider).buyPremium(product),
+      onTap: _isProcessing ? () {} : () => _buyPremium(product),
     );
   }
 

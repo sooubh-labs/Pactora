@@ -7,13 +7,14 @@ import 'package:pactora/core/providers/user_preferences_provider.dart';
 final iapServiceProvider = Provider<IapService>((ref) {
   final service = IapService(ref);
   service.init();
+  ref.onDispose(() => service.dispose());
   return service;
 });
 
 class IapService {
   final Ref _ref;
   final InAppPurchase _iap = InAppPurchase.instance;
-  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   static const String premium7DaysId = 'premium_7_days';
   static const String premium30DaysId = 'premium_30_days';
@@ -28,13 +29,15 @@ class IapService {
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
 
+  final _purchaseController = StreamController<PurchaseDetails>.broadcast();
+  Stream<PurchaseDetails> get purchaseStream => _purchaseController.stream;
+
   IapService(this._ref);
 
   void init() {
     final purchaseUpdated = _iap.purchaseStream;
     _subscription = purchaseUpdated.listen(
       _onPurchaseUpdate,
-      onDone: () => _subscription.cancel(),
       onError: (error) {
         debugPrint('IAP Critical Error: $error');
         _errorController.add('IAP service error: $error');
@@ -43,9 +46,10 @@ class IapService {
   }
 
   void dispose() {
-    _subscription.cancel();
+    _subscription?.cancel();
     _productsController.close();
     _errorController.close();
+    _purchaseController.close();
   }
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
@@ -53,6 +57,7 @@ class IapService {
       if (purchaseDetails.status == PurchaseStatus.pending) {
         debugPrint('Purchase Pending: ${purchaseDetails.productID}');
       } else {
+        _purchaseController.add(purchaseDetails);
         if (purchaseDetails.status == PurchaseStatus.error) {
           final errorMessage = purchaseDetails.error?.message ?? 'Unknown error';
           debugPrint('Purchase Error [${purchaseDetails.productID}]: $errorMessage');
