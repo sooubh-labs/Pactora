@@ -10,6 +10,8 @@ import 'widgets/category_chip_selector.dart';
 import 'widgets/person_picker_field.dart';
 import '../../../shared/widgets/proof_upload_widget.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/ads/ad_service.dart';
 
 class AddPromiseScreen extends ConsumerStatefulWidget {
   final Promise? promise;
@@ -360,28 +362,87 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
         return;
       }
 
-      final promise = widget.promise ?? Promise()
-        ..title = _titleController.text
-        ..description = _descriptionController.text.isEmpty ? null : _descriptionController.text
-        ..personId = _selectedPersonId!
-        ..category = _selectedCategory
-        ..priority = _selectedPriority
-        ..dueDate = _selectedDate
-        ..dueTime = _selectedTime != null
-            ? DateTime(0, 0, 0, _selectedTime!.hour, _selectedTime!.minute)
-            : null
-        ..iMadeThisPromise = _iMadeThisPromise
-        ..recurrence = _selectedRecurrence
-        ..notes = _notesController.text.isEmpty ? null : _notesController.text
-        ..attachmentPaths = _attachmentPaths
-        ..type = _iMadeThisPromise ? PromiseType.iPromised : PromiseType.theyPromised;
-
-      if (widget.promise != null) {
-        promise.id = widget.promise!.id;
+      if (widget.promise == null) {
+        final prefs = ref.read(userPreferencesProvider);
+        if (!prefs.isPremium && prefs.promisesAddedCount >= prefs.promiseLimit) {
+          _showLimitReachedDialog();
+          return;
+        }
       }
 
-      await ref.read(promiseRepositoryProvider).savePromise(promise);
-      if (mounted) context.pop();
+      await _executeSave();
     }
+  }
+
+  void _showLimitReachedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Limit Reached'),
+        content: const Text(
+            'You have reached your limit for adding free promises! Watch a quick ad to unlock 10 more, or upgrade to Premium for unlimited access.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              context.pop();
+              context.push('/premium');
+            },
+            child: const Text('Go Premium'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.pop();
+
+              AdService.instance.showRewardedAd(
+                onEarnedReward: () async {
+                  await ref.read(userPreferencesProvider.notifier).increasePromiseLimit(10);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('10 more promises unlocked!')),
+                  );
+                  _executeSave();
+                },
+                onAdFailed: () {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Ad unavailable. Please try again later or upgrade to Premium.')),
+                  );
+                },
+              );
+            },
+            child: const Text('Watch Ad (+10)'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executeSave() async {
+    final promise = widget.promise ?? Promise()
+      ..title = _titleController.text
+      ..description = _descriptionController.text.isEmpty ? null : _descriptionController.text
+      ..personId = _selectedPersonId!
+      ..category = _selectedCategory
+      ..priority = _selectedPriority
+      ..dueDate = _selectedDate
+      ..dueTime = _selectedTime != null
+          ? DateTime(0, 0, 0, _selectedTime!.hour, _selectedTime!.minute)
+          : null
+      ..iMadeThisPromise = _iMadeThisPromise
+      ..recurrence = _selectedRecurrence
+      ..notes = _notesController.text.isEmpty ? null : _notesController.text
+      ..attachmentPaths = _attachmentPaths
+      ..type = _iMadeThisPromise ? PromiseType.iPromised : PromiseType.theyPromised;
+
+    if (widget.promise != null) {
+      promise.id = widget.promise!.id;
+    } else {
+      await ref.read(userPreferencesProvider.notifier).incrementPromisesAdded();
+    }
+
+    await ref.read(promiseRepositoryProvider).savePromise(promise);
+    if (mounted) context.pop();
   }
 }

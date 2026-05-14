@@ -10,6 +10,8 @@ class UserPreferences {
   final String currencySymbol;
   final String currencyCode;
   final bool isPremium;
+  final int promisesAddedCount;
+  final int promiseLimit;
 
   UserPreferences({
     required this.name,
@@ -20,6 +22,8 @@ class UserPreferences {
     required this.currencySymbol,
     required this.currencyCode,
     required this.isPremium,
+    required this.promisesAddedCount,
+    required this.promiseLimit,
   });
 
   UserPreferences copyWith({
@@ -31,6 +35,8 @@ class UserPreferences {
     String? currencySymbol,
     String? currencyCode,
     bool? isPremium,
+    int? promisesAddedCount,
+    int? promiseLimit,
   }) {
     return UserPreferences(
       name: name ?? this.name,
@@ -41,6 +47,8 @@ class UserPreferences {
       currencySymbol: currencySymbol ?? this.currencySymbol,
       currencyCode: currencyCode ?? this.currencyCode,
       isPremium: isPremium ?? this.isPremium,
+      promisesAddedCount: promisesAddedCount ?? this.promisesAddedCount,
+      promiseLimit: promiseLimit ?? this.promiseLimit,
     );
   }
 }
@@ -54,11 +62,11 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
   static const _keyCurrencySymbol = 'currency_symbol';
   static const _keyCurrencyCode = 'currency_code';
   static const _keyPremium = 'is_premium';
+  static const _keyPromisesAdded = 'promises_added_count';
+  static const _keyPromiseLimit = 'promise_limit';
 
   @override
   UserPreferences build() {
-    // Initial state before SharedPreferences is loaded
-    // We'll update this once SharedPreferences is ready
     _loadFromPrefs();
     return UserPreferences(
       name: 'User Name',
@@ -69,6 +77,8 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       currencySymbol: '₹',
       currencyCode: 'INR',
       isPremium: false,
+      promisesAddedCount: 0,
+      promiseLimit: 10,
     );
   }
 
@@ -83,7 +93,23 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       currencySymbol: prefs.getString(_keyCurrencySymbol) ?? '₹',
       currencyCode: prefs.getString(_keyCurrencyCode) ?? 'INR',
       isPremium: prefs.getBool(_keyPremium) ?? false,
+      promisesAddedCount: prefs.getInt(_keyPromisesAdded) ?? 0,
+      promiseLimit: prefs.getInt(_keyPromiseLimit) ?? 10,
     );
+  }
+
+  Future<void> incrementPromisesAdded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newCount = state.promisesAddedCount + 1;
+    await prefs.setInt(_keyPromisesAdded, newCount);
+    state = state.copyWith(promisesAddedCount: newCount);
+  }
+
+  Future<void> increasePromiseLimit(int amount) async {
+    final prefs = await SharedPreferences.getInstance();
+    final newLimit = state.promiseLimit + amount;
+    await prefs.setInt(_keyPromiseLimit, newLimit);
+    state = state.copyWith(promiseLimit: newLimit);
   }
 
   Future<void> updateProfile({

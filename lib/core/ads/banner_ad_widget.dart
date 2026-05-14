@@ -59,9 +59,27 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
     if (_isAdLoaded && _bannerAd != null) {
       return Container(
         alignment: Alignment.center,
-        width: _bannerAd!.size.width.toDouble(),
-        height: _bannerAd!.size.height.toDouble(),
-        child: AdWidget(ad: _bannerAd!),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).primaryColor.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: SizedBox(
+            width: _bannerAd!.size.width.toDouble(),
+            height: _bannerAd!.size.height.toDouble(),
+            child: AdWidget(ad: _bannerAd!),
+          ),
+        ),
       );
     }
 
