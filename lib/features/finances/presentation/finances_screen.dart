@@ -35,7 +35,7 @@ class _FinancesScreenState extends State<FinancesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {},
+            onPressed: () => context.push('/timeline'),
           ),
           const SizedBox(width: 8),
         ],

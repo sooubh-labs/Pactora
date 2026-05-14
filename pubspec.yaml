@@ -52,10 +52,10 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "app-logo.png"
+  image_path: "launcher.png"
   web:
     generate: true
-    image_path: "app-logo.png"
+    image_path: "launcher.png"
     background_color: "#FFFFFF"
     theme_color: "#FFFFFF"
 
