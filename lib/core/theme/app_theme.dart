@@ -101,7 +101,106 @@ class AppTheme {
     );
   }
 
+  static ThemeData get darkTheme {
+    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme();
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.backgroundDark,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.secondary,
+        secondary: AppColors.secondary,
+        surface: AppColors.surfaceDark,
+        onSurface: AppColors.textPrimaryDark,
+        error: AppColors.error,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimaryDark,
+        elevation: 0,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: AppColors.textPrimaryDark, size: 24),
+        titleTextStyle: GoogleFonts.plusJakartaSans(
+          color: AppColors.textPrimaryDark,
+          fontSize: 26,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(32),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.secondary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: const Size(64, 56),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          textStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.secondary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: AppColors.secondary,
+        unselectedLabelColor: AppColors.textTertiaryDark,
+        indicatorSize: TabBarIndicatorSize.label,
+        labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 15),
+        unselectedLabelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, fontSize: 15),
+        indicator: UnderlineTabIndicator(
+          borderSide: const BorderSide(color: AppColors.secondary, width: 3),
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+      textTheme: baseTextTheme.copyWith(
+        headlineMedium: GoogleFonts.plusJakartaSans(
+          color: AppColors.textPrimaryDark,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.5,
+        ),
+        titleLarge: GoogleFonts.plusJakartaSans(
+          color: AppColors.textPrimaryDark,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+        bodyLarge: GoogleFonts.plusJakartaSans(
+          color: AppColors.textPrimaryDark,
+          fontSize: 16,
+        ),
+        bodyMedium: GoogleFonts.plusJakartaSans(
+          color: AppColors.textSecondaryDark,
+          fontSize: 14,
+        ),
+        labelSmall: GoogleFonts.plusJakartaSans(
+          color: AppColors.textTertiaryDark,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   // Legacy methods to maintain compatibility
   static ThemeData buildLightTheme() => lightTheme;
-  static ThemeData buildDarkTheme() => lightTheme;
+  static ThemeData buildDarkTheme() => darkTheme;
 }
