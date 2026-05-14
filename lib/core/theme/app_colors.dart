@@ -53,4 +53,9 @@ class AppColors {
   static const Color textSecondaryDark = Color(0xFF94A3B8);
   static const Color textTertiaryDark = Color(0xFF64748B);
   static const Color borderDark = Color(0xFF334155);
+
+  // Dark Semantic Backgrounds
+  static const Color overdueBgDark = Color(0xFF2D1616);
+  static const Color pendingBgDark = Color(0xFF161B2D);
+  static const Color doneBgDark = Color(0xFF1F1B2D);
 }
