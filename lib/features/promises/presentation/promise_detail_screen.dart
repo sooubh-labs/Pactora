@@ -248,7 +248,7 @@ class PromiseDetailScreen extends ConsumerWidget {
             child: SizedBox(
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _markComplete(ref, promise),
+                onPressed: () => _markComplete(context, ref, promise),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
@@ -287,8 +287,14 @@ class PromiseDetailScreen extends ConsumerWidget {
     }
   }
 
-  void _markComplete(WidgetRef ref, Promise promise) async {
+  void _markComplete(BuildContext context, WidgetRef ref, Promise promise) async {
     await ref.read(promiseRepositoryProvider).completePromise(promise);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Promise marked as completed!')),
+      );
+      Navigator.of(context).pop();
+    }
   }
 
   void _sendReminder(Promise promise, WidgetRef ref) async {

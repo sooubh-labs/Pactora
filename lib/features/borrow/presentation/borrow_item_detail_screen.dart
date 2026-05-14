@@ -234,7 +234,7 @@ class BorrowItemDetailScreen extends ConsumerWidget {
             child: SizedBox(
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _markReturned(ref, item),
+                onPressed: () => _markReturned(context, ref, item),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
@@ -265,9 +265,15 @@ class BorrowItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _markReturned(WidgetRef ref, BorrowItem item) async {
+  void _markReturned(BuildContext context, WidgetRef ref, BorrowItem item) async {
     final updated = item..status = ItemStatus.returned;
     await ref.read(itemRepositoryProvider).saveItem(updated);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item marked as returned!')),
+      );
+      Navigator.of(context).pop();
+    }
   }
 
   void _sendReminder(BorrowItem item, WidgetRef ref) async {

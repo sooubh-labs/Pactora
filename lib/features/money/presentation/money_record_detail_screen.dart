@@ -207,7 +207,7 @@ class MoneyRecordDetailScreen extends ConsumerWidget {
             child: SizedBox(
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _markSettled(ref, record),
+                onPressed: () => _markSettled(context, ref, record),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
@@ -238,9 +238,15 @@ class MoneyRecordDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _markSettled(WidgetRef ref, MoneyRecord record) async {
+  void _markSettled(BuildContext context, WidgetRef ref, MoneyRecord record) async {
     final updated = record..status = MoneyStatus.paid;
     await ref.read(moneyRepositoryProvider).saveRecord(updated);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Record marked as settled!')),
+      );
+      Navigator.of(context).pop();
+    }
   }
 
   void _sendReminder(MoneyRecord record, WidgetRef ref) async {
