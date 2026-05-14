@@ -11,6 +11,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(userPreferencesProvider);
+    final isPremium = ref.watch(isPremiumProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -22,10 +23,10 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: Icon(
               Icons.stars_rounded,
-              color: prefs.isPremium ? Colors.amber : Theme.of(context).primaryColor,
+              color: isPremium ? Colors.amber : Theme.of(context).primaryColor,
             ),
-            title: Text(prefs.isPremium ? 'Pactora Premium (Active)' : 'Upgrade to Premium'),
-            subtitle: Text(prefs.isPremium ? 'Thank you for your support!' : 'Remove ads and unlock all features'),
+            title: Text(isPremium ? 'Pactora Premium (Active)' : 'Upgrade to Premium'),
+            subtitle: Text(isPremium ? 'Thank you for your support!' : 'Remove ads and unlock all features'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/premium'),
           ),

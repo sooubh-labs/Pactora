@@ -363,8 +363,9 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
       }
 
       if (widget.promise == null) {
+        final isPremium = ref.read(isPremiumProvider);
         final prefs = ref.read(userPreferencesProvider);
-        if (!prefs.isPremium && prefs.promisesAddedCount >= prefs.promiseLimit) {
+        if (!isPremium && prefs.promisesAddedCount >= prefs.promiseLimit) {
           _showLimitReachedDialog();
           return;
         }
