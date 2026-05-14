@@ -19,7 +19,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
-  int _currentPage = 0;
   
   // Step 1 State
   final _nameController = TextEditingController();
@@ -94,11 +93,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPagePhysics(),
-                onPageChanged: (index) => setState(() => _currentPage = index),
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _buildStep1(),
-                  _buildStep2(),
+                  _WelcomeSetupPage(
+                    nameController: _nameController,
+                    selectedCurrency: _selectedCurrency,
+                    onCurrencyChanged: (val) {
+                      if (val != null) setState(() => _selectedCurrency = val);
+                    },
+                    onNext: _nextPage,
+                  ),
+                  _FirstPromisePage(
+                    theyOweMe: _theyOweMe,
+                    onOweChanged: (val) => setState(() => _theyOweMe = val),
+                    whoController: _whoController,
+                    whatController: _whatController,
+                    onComplete: _completeOnboarding,
+                  ),
                 ],
               ),
             ),
@@ -107,8 +118,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStep1() {
+class _WelcomeSetupPage extends StatelessWidget {
+  final TextEditingController nameController;
+  final CurrencyOption selectedCurrency;
+  final ValueChanged<CurrencyOption?> onCurrencyChanged;
+  final VoidCallback onNext;
+
+  const _WelcomeSetupPage({
+    required this.nameController,
+    required this.selectedCurrency,
+    required this.onCurrencyChanged,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -121,26 +147,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const Text('Let\'s get your profile set up so you can start tracking promises.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
           const Gap(48),
           TextField(
-            controller: _nameController,
+            controller: nameController,
             decoration: const InputDecoration(labelText: 'YOUR NAME', hintText: 'e.g. Alex'),
           ),
           const Gap(24),
           DropdownButtonFormField<CurrencyOption>(
-            value: _selectedCurrency,
+            value: selectedCurrency,
             decoration: const InputDecoration(labelText: 'PREFERRED CURRENCY'),
             items: currencyOptions.map((opt) => DropdownMenuItem(
               value: opt,
               child: Text('${opt.name} (${opt.symbol})'),
             )).toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => _selectedCurrency = val);
-            },
+            onChanged: onCurrencyChanged,
           ),
           const Gap(48),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _nextPage,
+              onPressed: onNext,
               child: const Text('Continue'),
             ),
           ),
@@ -148,8 +172,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStep2() {
+class _FirstPromisePage extends StatelessWidget {
+  final bool theyOweMe;
+  final ValueChanged<bool> onOweChanged;
+  final TextEditingController whoController;
+  final TextEditingController whatController;
+  final void Function({bool skipPromise}) onComplete;
+
+  const _FirstPromisePage({
+    required this.theyOweMe,
+    required this.onOweChanged,
+    required this.whoController,
+    required this.whatController,
+    required this.onComplete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -163,28 +204,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _theyOweMe = true),
+                  onTap: () => onOweChanged(true),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: _theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey.shade300, width: 2),
+                      border: Border.all(color: theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey.shade300, width: 2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Center(child: Text('They owe me', style: TextStyle(color: _theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey, fontWeight: FontWeight.bold))),
+                    child: Center(child: Text('They owe me', style: TextStyle(color: theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey, fontWeight: FontWeight.bold))),
                   ),
                 ),
               ),
               const Gap(16),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _theyOweMe = false),
+                  onTap: () => onOweChanged(false),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: !_theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey.shade300, width: 2),
+                      border: Border.all(color: !theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey.shade300, width: 2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Center(child: Text('I owe them', style: TextStyle(color: !_theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey, fontWeight: FontWeight.bold))),
+                    child: Center(child: Text('I owe them', style: TextStyle(color: !theyOweMe ? Theme.of(context).colorScheme.primary : Colors.grey, fontWeight: FontWeight.bold))),
                   ),
                 ),
               ),
@@ -192,25 +233,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const Gap(32),
           TextField(
-            controller: _whoController,
+            controller: whoController,
             decoration: const InputDecoration(hintText: 'Who? (e.g. John)'),
           ),
           const Gap(16),
           TextField(
-            controller: _whatController,
+            controller: whatController,
             decoration: const InputDecoration(hintText: 'What? (e.g. \$20 for lunch or a Book)'),
           ),
           const Gap(48),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _completeOnboarding(skipPromise: false),
+              onPressed: () => onComplete(skipPromise: false),
               child: const Text('Save & Go to Dashboard'),
             ),
           ),
           const Gap(16),
           TextButton(
-            onPressed: () => _completeOnboarding(skipPromise: true),
+            onPressed: () => onComplete(skipPromise: true),
             child: const Text('Skip for now', style: TextStyle(color: Colors.grey)),
           ),
         ],
