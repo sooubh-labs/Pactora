@@ -18,7 +18,7 @@ subprojects {
     afterEvaluate {
         val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
         android?.apply {
-            compileSdkVersion(34)
+            compileSdkVersion(36)
         }
         if (project.name == "isar_flutter_libs") {
             android?.namespace = "dev.isar.isar_flutter_libs"
