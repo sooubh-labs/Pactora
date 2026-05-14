@@ -454,6 +454,6 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
     }
 
     await ref.read(promiseRepositoryProvider).savePromise(promise);
-    if (mounted) context.pop();
+    if (mounted) context.go('/promises');
   }
 }

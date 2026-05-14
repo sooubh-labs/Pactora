@@ -262,7 +262,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
       }
 
       await ref.read(itemRepositoryProvider).saveItem(item);
-      if (mounted) context.pop();
+      if (mounted) context.go('/finances?tab=borrow');
     }
   }
 }

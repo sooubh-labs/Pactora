@@ -316,7 +316,7 @@ class _AddMoneyRecordScreenState extends ConsumerState<AddMoneyRecordScreen> {
       }
 
       await ref.read(moneyRepositoryProvider).saveRecord(record);
-      if (mounted) context.pop();
+      if (mounted) context.go('/finances?tab=money');
     }
   }
 }
