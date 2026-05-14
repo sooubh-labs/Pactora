@@ -25,6 +25,9 @@ class IapService {
   final _productsController = StreamController<List<ProductDetails>>.broadcast();
   Stream<List<ProductDetails>> get productsStream => _productsController.stream;
 
+  final _errorController = StreamController<String>.broadcast();
+  Stream<String> get errorStream => _errorController.stream;
+
   IapService(this._ref);
 
   void init() {
@@ -33,7 +36,8 @@ class IapService {
       _onPurchaseUpdate,
       onDone: () => _subscription.cancel(),
       onError: (error) {
-        debugPrint('IAP Error: $error');
+        debugPrint('IAP Critical Error: $error');
+        _errorController.add('IAP service error: $error');
       },
     );
   }
@@ -41,22 +45,32 @@ class IapService {
   void dispose() {
     _subscription.cancel();
     _productsController.close();
+    _errorController.close();
   }
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
     for (var purchaseDetails in purchaseDetailsList) {
       if (purchaseDetails.status == PurchaseStatus.pending) {
-        // Show pending UI if needed
+        debugPrint('Purchase Pending: ${purchaseDetails.productID}');
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
-          debugPrint('Purchase Error: ${purchaseDetails.error}');
+          final errorMessage = purchaseDetails.error?.message ?? 'Unknown error';
+          debugPrint('Purchase Error [${purchaseDetails.productID}]: $errorMessage');
+          _errorController.add('Purchase failed: $errorMessage');
         } else if (purchaseDetails.status == PurchaseStatus.purchased ||
             purchaseDetails.status == PurchaseStatus.restored) {
+          debugPrint('Purchase Successful/Restored: ${purchaseDetails.productID}');
           final bool valid = await _verifyPurchase(purchaseDetails);
           if (valid) {
             await _deliverProduct(purchaseDetails);
+          } else {
+            debugPrint('Purchase Validation Failed: ${purchaseDetails.productID}');
+            _errorController.add('Failed to verify purchase.');
           }
+        } else if (purchaseDetails.status == PurchaseStatus.canceled) {
+          debugPrint('Purchase Canceled: ${purchaseDetails.productID}');
         }
+
         if (purchaseDetails.pendingCompletePurchase) {
           await _iap.completePurchase(purchaseDetails);
         }

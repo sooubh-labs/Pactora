@@ -15,11 +15,32 @@ class PremiumScreen extends ConsumerStatefulWidget {
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   List<ProductDetails>? _products;
   bool _isLoading = true;
+  StreamSubscription<String>? _errorSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+    _listenToErrors();
+  }
+
+  @override
+  void dispose() {
+    _errorSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToErrors() {
+    _errorSubscription = ref.read(iapServiceProvider).errorStream.listen((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    });
   }
 
   Future<void> _loadProducts() async {
@@ -34,8 +55,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Pactora Premium'),
         backgroundColor: Colors.transparent,
@@ -46,26 +69,26 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
+            Icon(
               Icons.stars_rounded,
               size: 80,
-              color: AppColors.primary,
+              color: isDark ? theme.colorScheme.secondary : AppColors.primary,
             ),
             const Gap(16),
             Text(
               'Upgrade to Premium',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
+                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                   ),
             ),
             const Gap(8),
             Text(
               'Remove all ads and support the development of Pactora.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                   ),
             ),
             const Gap(32),
@@ -73,7 +96,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             const Gap(40),
             Text(
               'Choose Your Plan',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -85,9 +108,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             const Gap(32),
             TextButton(
               onPressed: () => ref.read(iapServiceProvider).restorePurchases(),
-              child: const Text(
+              child: Text(
                 'Already purchased? Restore Purchase',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? theme.colorScheme.secondary : AppColors.primary,
+                ),
               ),
             ),
             const Gap(48),
@@ -197,21 +223,27 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     required bool isPopular,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = isDark ? theme.colorScheme.secondary : AppColors.primary;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color ?? (isDark ? AppColors.surfaceDark : Colors.white),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isPopular ? AppColors.primary : Colors.black.withOpacity(0.05),
+          color: isPopular ? primaryColor : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.05)),
           width: isPopular ? 2 : 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: isDark 
+          ? [] 
+          : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
       ),
       child: Stack(
         children: [
@@ -221,9 +253,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(22),
                     bottomLeft: Radius.circular(16),
                   ),
@@ -250,12 +282,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: isPopular ? AppColors.primary.withOpacity(0.1) : Colors.grey[100],
+                      color: isPopular ? primaryColor.withOpacity(0.1) : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100]),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       isPopular ? Icons.auto_awesome_rounded : Icons.calendar_today_rounded,
-                      color: isPopular ? AppColors.primary : Colors.grey[600],
+                      color: isPopular ? primaryColor : (isDark ? AppColors.textTertiaryDark : Colors.grey[600]),
                     ),
                   ),
                   const Gap(16),
@@ -265,15 +297,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
+                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           duration,
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: isDark ? AppColors.textSecondaryDark : Colors.grey[600],
                             fontSize: 13,
                           ),
                         ),
@@ -288,12 +321,15 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 20,
-                          color: isPopular ? AppColors.primary : AppColors.textPrimary,
+                          color: isPopular ? primaryColor : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimary),
                         ),
                       ),
-                      const Text(
+                      Text(
                         'one-time',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 10, 
+                          color: isDark ? AppColors.textTertiaryDark : Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -312,18 +348,22 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     required String title,
     required String description,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = isDark ? theme.colorScheme.secondary : AppColors.primary;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: primaryColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: AppColors.primary,
+            color: primaryColor,
             size: 24,
           ),
         ),
@@ -334,15 +374,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                     ),
               ),
               const Gap(4),
               Text(
                 description,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
+                style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark ? AppColors.textSecondaryDark : Colors.grey[600],
                     ),
               ),
             ],
