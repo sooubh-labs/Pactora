@@ -83,8 +83,11 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.brightness_6),
             title: const Text('Theme Mode'),
-            trailing: const Text('System'),
-            onTap: () {},
+            trailing: Text(
+              prefs.themeMode.name.toUpperCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onTap: () => _showThemeDialog(context, ref),
           ),
           const Divider(),
           const _SettingsHeader(title: 'Danger Zone', color: Colors.red),
@@ -94,6 +97,33 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showClearDataDialog(context),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, WidgetRef ref) {
+    final currentTheme = ref.read(userPreferencesProvider).themeMode;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Theme Mode'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppThemeMode.values.map((mode) {
+            return RadioListTile<AppThemeMode>(
+              title: Text(mode.name.toUpperCase()),
+              value: mode,
+              groupValue: currentTheme,
+              onChanged: (val) {
+                if (val != null) {
+                  ref.read(userPreferencesProvider.notifier).setThemeMode(val);
+                  Navigator.pop(context);
+                }
+              },
+            );
+          }).toList(),
+        ),
       ),
     );
   }
