@@ -252,7 +252,7 @@ class DashboardScreen extends ConsumerWidget {
               color: AppColors.pendingText,
               bgColor: AppColors.pendingBg,
               icon: Icons.hourglass_empty_rounded,
-              onTap: () => context.go('/promises'),
+              onTap: () => context.go('/promises?filter=pending'),
             ),
             _StatCard(
               label: 'Overdue Items',
@@ -260,8 +260,9 @@ class DashboardScreen extends ConsumerWidget {
               color: AppColors.overdueText,
               bgColor: AppColors.overdueBg,
               icon: Icons.warning_amber_rounded,
-              onTap: () => context.go('/promises'),
+              onTap: () => context.go('/promises?filter=overdue'),
             ),
+
             _StatCard(
               label: 'Borrowed Items',
               count: summary.activeBorrows.toString(),

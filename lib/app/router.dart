@@ -80,7 +80,14 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/promises',
-          builder: (context, state) => const PromisesScreen(),
+          builder: (context, state) {
+            final filter = state.uri.queryParameters['filter'];
+            int filterIndex = 0;
+            if (filter == 'pending') filterIndex = 1;
+            if (filter == 'overdue') filterIndex = 2;
+            if (filter == 'done') filterIndex = 3;
+            return PromisesScreen(initialFilterIndex: filterIndex);
+          },
           routes: [
             GoRoute(
               path: 'add',

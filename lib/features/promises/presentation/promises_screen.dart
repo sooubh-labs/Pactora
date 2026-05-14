@@ -12,7 +12,8 @@ import '../../../core/ads/ad_list_separator.dart';
 import '../../../shared/widgets/horizontal_calendar.dart';
 
 class PromisesScreen extends ConsumerStatefulWidget {
-  const PromisesScreen({super.key});
+  final int initialFilterIndex;
+  const PromisesScreen({super.key, this.initialFilterIndex = 0});
 
   @override
   ConsumerState<PromisesScreen> createState() => _PromisesScreenState();
@@ -22,8 +23,14 @@ enum PromiseSortType { date, priority, category }
 
 class _PromisesScreenState extends ConsumerState<PromisesScreen> {
   DateTime? _selectedDate;
-  int _selectedFilterIndex = 0; // 0: All, 1: Pending, 2: Overdue, 3: Done
+  late int _selectedFilterIndex;
   PromiseSortType _currentSort = PromiseSortType.date;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilterIndex = widget.initialFilterIndex;
+  }
 
   @override
   Widget build(BuildContext context) {

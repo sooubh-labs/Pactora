@@ -1,6 +1,7 @@
 import 'package:isar/isar.dart';
 import '../domain/money_model.dart';
 import '../../../core/services/isar_service.dart';
+import '../../../core/services/notification_service.dart';
 
 class MoneyRepository {
   final Isar _db = IsarService.db;
@@ -21,12 +22,14 @@ class MoneyRepository {
     await _db.writeTxn(() async {
       await _db.moneyRecords.put(record);
     });
+    await NotificationService.scheduleMoneyNotification(record);
   }
 
   Future<void> deleteRecord(int id) async {
     await _db.writeTxn(() async {
       await _db.moneyRecords.delete(id);
     });
+    await NotificationService.cancelMoneyNotification(id);
   }
 
   Stream<List<MoneyRecord>> watchRecordsByPerson(int personId) {

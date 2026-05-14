@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 import '../domain/promise_model.dart';
 import '../domain/promise_enums.dart';
 import '../../../core/services/isar_service.dart';
+import '../../../core/services/notification_service.dart';
 
 class PromiseRepository {
   final Isar _db = IsarService.db;
@@ -22,16 +23,18 @@ class PromiseRepository {
     await _db.writeTxn(() async {
       await _db.promises.put(promise);
     });
+    await NotificationService.schedulePromiseNotification(promise);
   }
 
   Future<void> completePromise(Promise promise) async {
+    Promise? nextPromise;
     await _db.writeTxn(() async {
       promise.status = PromiseStatus.completed;
       promise.completedAt = DateTime.now();
       await _db.promises.put(promise);
 
       if (promise.recurrence != RecurrenceType.none && promise.dueDate != null) {
-        final nextPromise = Promise()
+        nextPromise = Promise()
           ..title = promise.title
           ..description = promise.description
           ..personId = promise.personId
@@ -43,9 +46,14 @@ class PromiseRepository {
           ..parentPromiseId = promise.id
           ..dueDate = _calculateNextDueDate(promise.dueDate!, promise.recurrence);
         
-        await _db.promises.put(nextPromise);
+        await _db.promises.put(nextPromise!);
       }
     });
+
+    await NotificationService.cancelPromiseNotification(promise.id);
+    if (nextPromise != null) {
+      await NotificationService.schedulePromiseNotification(nextPromise!);
+    }
   }
 
   DateTime _calculateNextDueDate(DateTime current, RecurrenceType type) {
@@ -67,6 +75,7 @@ class PromiseRepository {
     await _db.writeTxn(() async {
       await _db.promises.delete(id);
     });
+    await NotificationService.cancelPromiseNotification(id);
   }
 
   Stream<List<Promise>> watchPromisesByPerson(int personId) {
