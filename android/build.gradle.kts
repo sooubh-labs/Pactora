@@ -16,8 +16,11 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 
     afterEvaluate {
+        val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+        android?.apply {
+            compileSdkVersion(34)
+        }
         if (project.name == "isar_flutter_libs") {
-            val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
             android?.namespace = "dev.isar.isar_flutter_libs"
         }
     }
