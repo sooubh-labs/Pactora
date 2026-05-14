@@ -406,18 +406,17 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
 
+              final messenger = ScaffoldMessenger.of(context);
               AdService.instance.showRewardedAd(
                 onEarnedReward: () async {
                   await ref.read(userPreferencesProvider.notifier).increasePromiseLimit(10);
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('10 more promises unlocked!')),
                   );
                   _executeSave();
                 },
                 onAdFailed: () {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                         content: Text('Ad unavailable. Please try again later or upgrade to Premium.')),
                   );

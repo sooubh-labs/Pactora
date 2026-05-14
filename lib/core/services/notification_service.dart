@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -113,7 +114,7 @@ class NotificationService {
       );
     } catch (e) {
       // Ignore notification scheduling errors (e.g. missing EXACT_ALARM permission)
-      print('Failed to schedule notification: $e');
+      debugPrint('Failed to schedule notification: $e');
     }
   }
 
