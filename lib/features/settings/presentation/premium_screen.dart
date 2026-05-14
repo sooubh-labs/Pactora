@@ -35,11 +35,14 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Pactora Premium'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -53,57 +56,252 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               'Upgrade to Premium',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
                   ),
             ),
             const Gap(8),
             Text(
-              'Get the most out of Pactora with these exclusive features.',
+              'Remove all ads and support the development of Pactora.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                   ),
             ),
             const Gap(32),
-            _buildBenefitItem(
-              context,
-              icon: Icons.block,
-              title: 'Remove Advertisements',
-              description: 'Enjoy a clean, ad-free experience while managing your promises.',
+            _buildBenefitsGrid(context),
+            const Gap(40),
+            Text(
+              'Choose Your Plan',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const Gap(16),
-            _buildBenefitItem(
-              context,
-              icon: Icons.favorite,
-              title: 'Support Development',
-              description: 'Help us keep Pactora free of trackers and maintain its offline-first privacy.',
-            ),
-            const Gap(16),
-            _buildBenefitItem(
-              context,
-              icon: Icons.cloud_done,
-              title: 'Future Features',
-              description: 'Get early access to upcoming features like advanced backup and insights.',
-            ),
-            const Gap(48),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
-            else if (_products == null || _products!.isEmpty)
-              const Center(
-                child: Text(
-                  'No products available for purchase at this time.',
-                  textAlign: TextAlign.center,
-                ),
-              )
             else
-              ..._products!.map((product) => _buildPurchaseCard(context, product)),
-            const Gap(24),
+              _buildPricingOptions(context),
+            const Gap(32),
             TextButton(
               onPressed: () => ref.read(iapServiceProvider).restorePurchases(),
-              child: const Text('Already purchased? Restore Purchase'),
+              child: const Text(
+                'Already purchased? Restore Purchase',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
+            const Gap(48),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBenefitsGrid(BuildContext context) {
+    return Column(
+      children: [
+        _buildBenefitItem(
+          context,
+          icon: Icons.block_rounded,
+          title: 'Ad-Free Experience',
+          description: 'No more banners or rewarded ad interruptions.',
+        ),
+        const Gap(16),
+        _buildBenefitItem(
+          context,
+          icon: Icons.all_inclusive_rounded,
+          title: 'Unlimited Promises',
+          description: 'Remove the 10-promise batch limit forever.',
+        ),
+        const Gap(16),
+        _buildBenefitItem(
+          context,
+          icon: Icons.favorite_rounded,
+          title: 'Support Private Dev',
+          description: 'Help us keep Pactora 100% offline and private.',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPricingOptions(BuildContext context) {
+    // If no real products loaded (e.g. emulator), show mock ones for UI preview
+    if (_products == null || _products!.isEmpty) {
+      return Column(
+        children: [
+          _buildMockCard(context, 'Weekly Ad-Block', '₹29', '7 Days'),
+          const Gap(16),
+          _buildMockCard(context, 'Monthly Ad-Block', '₹99', '30 Days'),
+          const Gap(16),
+          _buildMockCard(context, 'Lifetime Access', '₹599', 'Forever', isPopular: true),
+        ],
+      );
+    }
+
+    // Sort products: 7 days, 30 days, Lifetime
+    final sortedProducts = List<ProductDetails>.from(_products!);
+    sortedProducts.sort((a, b) {
+      if (a.id.contains('7_days')) return -1;
+      if (b.id.contains('7_days')) return 1;
+      if (a.id.contains('30_days')) return -1;
+      if (b.id.contains('30_days')) return 1;
+      return 0;
+    });
+
+    return Column(
+      children: sortedProducts.map((product) {
+        final isLifetime = product.id.contains('lifetime');
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildPurchaseCard(context, product, isPopular: isLifetime),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMockCard(BuildContext context, String title, String price, String duration, {bool isPopular = false}) {
+    return _buildBaseCard(
+      context,
+      title: title,
+      price: price,
+      duration: duration,
+      isPopular: isPopular,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Purchase simulation: Connect to Google Play for real purchase.')),
+        );
+      },
+    );
+  }
+
+  Widget _buildPurchaseCard(BuildContext context, ProductDetails product, {bool isPopular = false}) {
+    String duration = 'Forever';
+    if (product.id.contains('7_days')) duration = '7 Days';
+    if (product.id.contains('30_days')) duration = '30 Days';
+
+    return _buildBaseCard(
+      context,
+      title: product.title.split('(').first.trim(),
+      price: product.price,
+      duration: duration,
+      isPopular: isPopular,
+      onTap: () => ref.read(iapServiceProvider).buyPremium(product),
+    );
+  }
+
+  Widget _buildBaseCard(
+    BuildContext context, {
+    required String title,
+    required String price,
+    required String duration,
+    required bool isPopular,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isPopular ? AppColors.primary : Colors.black.withOpacity(0.05),
+          width: isPopular ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          if (isPopular)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(22),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'BEST VALUE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isPopular ? AppColors.primary.withOpacity(0.1) : Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isPopular ? Icons.auto_awesome_rounded : Icons.calendar_today_rounded,
+                      color: isPopular ? AppColors.primary : Colors.grey[600],
+                    ),
+                  ),
+                  const Gap(16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          duration,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        price,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                          color: isPopular ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                      const Text(
+                        'one-time',
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -151,56 +349,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPurchaseCard(BuildContext context, ProductDetails product) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.primary, width: 2),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            Text(
-              product.title.split('(').first.trim(),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const Gap(8),
-            Text(
-              product.description,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const Gap(16),
-            Text(
-              product.price,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-            ),
-            const Gap(16),
-            ElevatedButton(
-              onPressed: () => ref.read(iapServiceProvider).buyPremium(product),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Upgrade Now'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

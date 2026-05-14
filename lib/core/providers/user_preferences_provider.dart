@@ -9,7 +9,8 @@ class UserPreferences {
   final String profileImagePath;
   final String currencySymbol;
   final String currencyCode;
-  final bool isPremium;
+  final bool isLifetimePremium;
+  final DateTime? premiumExpiryDate;
   final int promisesAddedCount;
   final int promiseLimit;
 
@@ -21,7 +22,8 @@ class UserPreferences {
     required this.profileImagePath,
     required this.currencySymbol,
     required this.currencyCode,
-    required this.isPremium,
+    required this.isLifetimePremium,
+    this.premiumExpiryDate,
     required this.promisesAddedCount,
     required this.promiseLimit,
   });
@@ -34,7 +36,8 @@ class UserPreferences {
     String? profileImagePath,
     String? currencySymbol,
     String? currencyCode,
-    bool? isPremium,
+    bool? isLifetimePremium,
+    DateTime? premiumExpiryDate,
     int? promisesAddedCount,
     int? promiseLimit,
   }) {
@@ -46,7 +49,8 @@ class UserPreferences {
       profileImagePath: profileImagePath ?? this.profileImagePath,
       currencySymbol: currencySymbol ?? this.currencySymbol,
       currencyCode: currencyCode ?? this.currencyCode,
-      isPremium: isPremium ?? this.isPremium,
+      isLifetimePremium: isLifetimePremium ?? this.isLifetimePremium,
+      premiumExpiryDate: premiumExpiryDate ?? this.premiumExpiryDate,
       promisesAddedCount: promisesAddedCount ?? this.promisesAddedCount,
       promiseLimit: promiseLimit ?? this.promiseLimit,
     );
@@ -61,7 +65,8 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
   static const _keyImage = 'profile_image';
   static const _keyCurrencySymbol = 'currency_symbol';
   static const _keyCurrencyCode = 'currency_code';
-  static const _keyPremium = 'is_premium';
+  static const _keyIsLifetime = 'is_lifetime_premium';
+  static const _keyExpiryDate = 'premium_expiry_date';
   static const _keyPromisesAdded = 'promises_added_count';
   static const _keyPromiseLimit = 'promise_limit';
 
@@ -76,7 +81,8 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       profileImagePath: '',
       currencySymbol: '₹',
       currencyCode: 'INR',
-      isPremium: false,
+      isLifetimePremium: false,
+      premiumExpiryDate: null,
       promisesAddedCount: 0,
       promiseLimit: 10,
     );
@@ -84,6 +90,7 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
 
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+    final expiryStr = prefs.getString(_keyExpiryDate);
     state = UserPreferences(
       name: prefs.getString(_keyName) ?? 'User Name',
       email: prefs.getString(_keyEmail) ?? 'user@example.com',
@@ -92,10 +99,23 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       profileImagePath: prefs.getString(_keyImage) ?? '',
       currencySymbol: prefs.getString(_keyCurrencySymbol) ?? '₹',
       currencyCode: prefs.getString(_keyCurrencyCode) ?? 'INR',
-      isPremium: prefs.getBool(_keyPremium) ?? false,
+      isLifetimePremium: prefs.getBool(_keyIsLifetime) ?? false,
+      premiumExpiryDate: expiryStr != null ? DateTime.tryParse(expiryStr) : null,
       promisesAddedCount: prefs.getInt(_keyPromisesAdded) ?? 0,
       promiseLimit: prefs.getInt(_keyPromiseLimit) ?? 10,
     );
+  }
+
+  Future<void> setLifetimePremium(bool isLifetime) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyIsLifetime, isLifetime);
+    state = state.copyWith(isLifetimePremium: isLifetime);
+  }
+
+  Future<void> setPremiumExpiry(DateTime expiryDate) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyExpiryDate, expiryDate.toIso8601String());
+    state = state.copyWith(premiumExpiryDate: expiryDate);
   }
 
   Future<void> incrementPromisesAdded() async {
@@ -145,15 +165,6 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       currencyCode: code,
     );
   }
-
-  Future<void> updatePremiumStatus(bool isPremium) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyPremium, isPremium);
-
-    state = state.copyWith(
-      isPremium: isPremium,
-    );
-  }
 }
 
 final userPreferencesProvider = NotifierProvider<UserPreferencesNotifier, UserPreferences>(() {
@@ -161,7 +172,12 @@ final userPreferencesProvider = NotifierProvider<UserPreferencesNotifier, UserPr
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
-  return ref.watch(userPreferencesProvider).isPremium;
+  final prefs = ref.watch(userPreferencesProvider);
+  if (prefs.isLifetimePremium) return true;
+  if (prefs.premiumExpiryDate != null && prefs.premiumExpiryDate!.isAfter(DateTime.now())) {
+    return true;
+  }
+  return false;
 });
 
 class CurrencyOption {

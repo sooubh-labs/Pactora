@@ -15,7 +15,10 @@ class IapService {
   final InAppPurchase _iap = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
 
-  static const String premiumId = 'pactora_premium_lifetime';
+  static const String premium7DaysId = 'premium_7_days';
+  static const String premium30DaysId = 'premium_30_days';
+  static const String premiumLifetimeId = 'premium_lifetime';
+  
   // For testing on Android, you can use 'android.test.purchased'
   static const String testPremiumId = 'android.test.purchased';
 
@@ -68,8 +71,14 @@ class IapService {
   }
 
   Future<void> _deliverProduct(PurchaseDetails purchaseDetails) async {
-    if (purchaseDetails.productID == premiumId || purchaseDetails.productID == testPremiumId) {
-      await _ref.read(userPreferencesProvider.notifier).updatePremiumStatus(true);
+    final notifier = _ref.read(userPreferencesProvider.notifier);
+    
+    if (purchaseDetails.productID == premiumLifetimeId || purchaseDetails.productID == testPremiumId) {
+      await notifier.setLifetimePremium(true);
+    } else if (purchaseDetails.productID == premium7DaysId) {
+      await notifier.setPremiumExpiry(DateTime.now().add(const Duration(days: 7)));
+    } else if (purchaseDetails.productID == premium30DaysId) {
+      await notifier.setPremiumExpiry(DateTime.now().add(const Duration(days: 30)));
     }
   }
 
@@ -79,7 +88,7 @@ class IapService {
       return [];
     }
 
-    const Set<String> ids = {premiumId, testPremiumId};
+    const Set<String> ids = {premium7DaysId, premium30DaysId, premiumLifetimeId, testPremiumId};
     final ProductDetailsResponse response = await _iap.queryProductDetails(ids);
 
     if (response.notFoundIDs.isNotEmpty) {
