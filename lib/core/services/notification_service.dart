@@ -91,25 +91,30 @@ class NotificationService {
   }
 
   static Future<void> _schedule(int id, String title, String body, DateTime time) async {
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(time, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'pactora_reminders',
-          'Pactora Reminders',
-          channelDescription: 'Reminders for your promises and commitments',
-          importance: Importance.max,
-          priority: Priority.high,
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(time, tz.local),
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'pactora_reminders',
+            'Pactora Reminders',
+            channelDescription: 'Reminders for your promises and commitments',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      // Ignore notification scheduling errors (e.g. missing EXACT_ALARM permission)
+      print('Failed to schedule notification: $e');
+    }
   }
 
   static Future<void> cancel(int notificationId) async {

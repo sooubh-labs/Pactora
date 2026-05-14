@@ -378,22 +378,33 @@ class _AddPromiseScreenState extends ConsumerState<AddPromiseScreen> {
   void _showLimitReachedDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Limit Reached'),
+      barrierDismissible: true,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Limit Reached'),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
         content: const Text(
             'You have reached your limit for adding free promises! Watch a quick ad to unlock 10 more, or upgrade to Premium for unlimited access.'),
         actions: [
           TextButton(
             onPressed: () {
-              context.pop();
+              Navigator.of(dialogContext).pop();
               context.push('/premium');
             },
             child: const Text('Go Premium'),
           ),
           ElevatedButton(
             onPressed: () {
-              context.pop();
+              Navigator.of(dialogContext).pop();
 
               AdService.instance.showRewardedAd(
                 onEarnedReward: () async {
