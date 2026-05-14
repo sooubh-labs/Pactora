@@ -1,10 +1,31 @@
 name: Flutter CI/CD
 
 on:
+  # Automatic - triggers on push and PR
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  # Automatic - runs every day at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  # Manual - trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type to run'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+          - both
+      run_tests:
+        description: 'Run flutter analyze?'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   build:
@@ -13,18 +34,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
 
       - name: Environment Info
         run: |
@@ -33,6 +54,8 @@ jobs:
           echo "Branch: ${{ github.ref }}"
           echo "Workflow: ${{ github.workflow }}"
           echo "Runner OS: ${{ runner.os }}"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Build Type Input: ${{ github.event.inputs.build_type || 'auto' }}"
           echo "====================="
           git status
           flutter --version
@@ -41,55 +64,66 @@ jobs:
         run: flutter pub get
 
       - name: Run Analyze
+        if: github.event.inputs.run_tests != 'false'
         run: flutter analyze
 
       - name: Build Debug APK
+        if: |
+          github.event.inputs.build_type == 'debug' ||
+          github.event.inputs.build_type == 'both'  ||
+          github.event_name == 'push'               ||
+          github.event_name == 'pull_request'       ||
+          github.event_name == 'schedule'
         run: flutter build apk --debug
 
-      - name: Prepare Release Signing
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_BASE64 != ''
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/pactora.jks
-          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=pactora.jks" >> android/key.properties
-
-      - name: Build Release APK
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_BASE64 != ''
-        run: |
-          echo "Building Release APK..."
-          flutter build apk --release
-          echo "Release APK build finished."
-
-      - name: Build Release App Bundle
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_BASE64 != ''
-        run: |
-          echo "Building Release App Bundle (.aab) for Play Store..."
-          flutter build appbundle --release
-          echo "Release App Bundle build finished."
-
       - name: Upload Debug APK
+        if: |
+          github.event.inputs.build_type == 'debug' ||
+          github.event.inputs.build_type == 'both'  ||
+          github.event_name == 'push'               ||
+          github.event_name == 'pull_request'       ||
+          github.event_name == 'schedule'
         uses: actions/upload-artifact@v4
         with:
           name: pactora-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
 
+      - name: Prepare Release Signing
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: |
+          env.KEYSTORE_BASE64 != '' && (
+            github.event.inputs.build_type == 'release' ||
+            github.event.inputs.build_type == 'both'    ||
+            github.event_name == 'push'                 ||
+            github.event_name == 'schedule'
+          )
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/pactora.jks
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}"  > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}"     >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}"           >> android/key.properties
+          echo "storeFile=pactora.jks"                       >> android/key.properties
+          echo "has_keystore=true" >> $GITHUB_OUTPUT
+
+      - name: Build Release APK
+        if: steps.signing.outputs.has_keystore == 'true'
+        run: flutter build apk --release
+
+      - name: Build Release App Bundle
+        if: steps.signing.outputs.has_keystore == 'true'
+        run: flutter build appbundle --release
+
       - name: Upload Release APK
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: steps.signing.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: pactora-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload Release App Bundle
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: steps.signing.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: pactora-release-aab
