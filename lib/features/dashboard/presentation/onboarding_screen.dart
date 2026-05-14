@@ -143,7 +143,7 @@ class _WelcomeSetupPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset('assets/images/app-logo.png', width: 120, height: 120),
+          Image.asset('assets/images/app-logo.png', width: 140, height: 140),
           const Gap(24),
           const Text('Welcome to Pactora!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const Gap(8),
