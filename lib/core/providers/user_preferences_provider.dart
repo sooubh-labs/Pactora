@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum AppThemeMode { system, light, dark }
+
 class UserPreferences {
   final String name;
   final String email;
@@ -13,6 +15,7 @@ class UserPreferences {
   final DateTime? premiumExpiryDate;
   final int promisesAddedCount;
   final int promiseLimit;
+  final AppThemeMode themeMode;
 
   UserPreferences({
     required this.name,
@@ -26,6 +29,7 @@ class UserPreferences {
     this.premiumExpiryDate,
     required this.promisesAddedCount,
     required this.promiseLimit,
+    required this.themeMode,
   });
 
   UserPreferences copyWith({
@@ -40,6 +44,7 @@ class UserPreferences {
     DateTime? premiumExpiryDate,
     int? promisesAddedCount,
     int? promiseLimit,
+    AppThemeMode? themeMode,
   }) {
     return UserPreferences(
       name: name ?? this.name,
@@ -53,6 +58,7 @@ class UserPreferences {
       premiumExpiryDate: premiumExpiryDate ?? this.premiumExpiryDate,
       promisesAddedCount: promisesAddedCount ?? this.promisesAddedCount,
       promiseLimit: promiseLimit ?? this.promiseLimit,
+      themeMode: themeMode ?? this.themeMode,
     );
   }
 }
@@ -69,6 +75,7 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
   static const _keyExpiryDate = 'premium_expiry_date';
   static const _keyPromisesAdded = 'promises_added_count';
   static const _keyPromiseLimit = 'promise_limit';
+  static const _keyThemeMode = 'theme_mode';
 
   @override
   UserPreferences build() {
@@ -85,12 +92,15 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       premiumExpiryDate: null,
       promisesAddedCount: 0,
       promiseLimit: 10,
+      themeMode: AppThemeMode.system,
     );
   }
 
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final expiryStr = prefs.getString(_keyExpiryDate);
+    final themeIndex = prefs.getInt(_keyThemeMode) ?? 0;
+    
     state = UserPreferences(
       name: prefs.getString(_keyName) ?? 'User Name',
       email: prefs.getString(_keyEmail) ?? 'user@example.com',
@@ -103,7 +113,14 @@ class UserPreferencesNotifier extends Notifier<UserPreferences> {
       premiumExpiryDate: expiryStr != null ? DateTime.tryParse(expiryStr) : null,
       promisesAddedCount: prefs.getInt(_keyPromisesAdded) ?? 0,
       promiseLimit: prefs.getInt(_keyPromiseLimit) ?? 10,
+      themeMode: AppThemeMode.values[themeIndex],
     );
+  }
+
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyThemeMode, mode.index);
+    state = state.copyWith(themeMode: mode);
   }
 
   Future<void> setLifetimePremium(bool isLifetime) async {
