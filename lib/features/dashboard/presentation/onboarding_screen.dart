@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/user_preferences_provider.dart';
+import '../../../core/services/data_seed_service.dart';
 import '../../people/data/person_repository.dart';
 import '../../people/domain/person_model.dart';
 import '../../promises/data/promise_repository.dart';
@@ -80,6 +81,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     
     await ref.read(userPreferencesProvider.notifier).updateProfile(name: _nameController.text.trim());
     await ref.read(userPreferencesProvider.notifier).updateCurrency(_selectedCurrency.symbol, _selectedCurrency.code);
+
+    await DataSeedService.seed();
 
     if (mounted) context.go('/permissions');
   }

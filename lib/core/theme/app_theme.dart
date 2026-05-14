@@ -17,20 +17,6 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
-    return _buildTheme(
-      brightness: Brightness.dark,
-      backgroundColor: AppColors.backgroundDark,
-      primaryColor: AppColors.secondary, // Use secondary as primary in dark mode for better visibility
-      secondaryColor: AppColors.secondary,
-      surfaceColor: AppColors.surfaceDark,
-      errorColor: AppColors.error,
-      textPrimary: AppColors.textPrimaryDark,
-      textSecondary: AppColors.textSecondaryDark,
-      textTertiary: AppColors.textTertiaryDark,
-    );
-  }
-
   static ThemeData _buildTheme({
     required Brightness brightness,
     required Color backgroundColor,
@@ -56,6 +42,14 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: surfaceColor,
         onSurface: textPrimary,
+        onSurfaceVariant: textSecondary,
+        outline: textTertiary,
+        outlineVariant: brightness == Brightness.light
+            ? AppColors.border
+            : AppColors.borderDark,
+        surfaceVariant: brightness == Brightness.light
+            ? AppColors.background
+            : AppColors.surfaceDark,
         error: errorColor,
         onError: Colors.white,
       ),
@@ -182,5 +176,4 @@ class AppTheme {
 
   // Legacy methods to maintain compatibility
   static ThemeData buildLightTheme() => lightTheme;
-  static ThemeData buildDarkTheme() => darkTheme;
 }
