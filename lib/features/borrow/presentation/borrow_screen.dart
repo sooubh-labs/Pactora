@@ -233,7 +233,10 @@ class _ItemList extends ConsumerWidget {
     return SliverList.separated(
       itemCount: items.length,
       separatorBuilder: (context, index) => AdListSeparator(index: index),
-      itemBuilder: (context, index) => _ItemCard(item: items[index]),
+      itemBuilder: (context, index) => _ItemCard(
+        key: ValueKey(items[index].id),
+        item: items[index],
+      ),
     );
   }
 }
@@ -241,7 +244,7 @@ class _ItemList extends ConsumerWidget {
 class _ItemCard extends ConsumerStatefulWidget {
   final BorrowItem item;
 
-  const _ItemCard({required this.item});
+  const _ItemCard({super.key, required this.item});
 
   @override
   ConsumerState<_ItemCard> createState() => _ItemCardState();

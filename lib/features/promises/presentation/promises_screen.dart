@@ -220,7 +220,10 @@ class _PromiseList extends ConsumerWidget {
       itemCount: promises.length,
       separatorBuilder: (context, index) => AdListSeparator(index: index),
       itemBuilder: (context, index) {
-        return _PromiseCard(promise: promises[index]);
+        return _PromiseCard(
+          key: ValueKey(promises[index].id),
+          promise: promises[index],
+        );
       },
     );
   }
@@ -229,7 +232,7 @@ class _PromiseList extends ConsumerWidget {
 class _PromiseCard extends ConsumerStatefulWidget {
   final Promise promise;
 
-  const _PromiseCard({required this.promise});
+  const _PromiseCard({super.key, required this.promise});
 
   @override
   ConsumerState<_PromiseCard> createState() => _PromiseCardState();

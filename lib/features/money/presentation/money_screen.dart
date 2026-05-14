@@ -228,7 +228,10 @@ class _RecordList extends ConsumerWidget {
     return SliverList.separated(
       itemCount: records.length,
       separatorBuilder: (context, index) => AdListSeparator(index: index),
-      itemBuilder: (context, index) => _RecordCard(record: records[index]),
+      itemBuilder: (context, index) => _RecordCard(
+        key: ValueKey(records[index].id),
+        record: records[index],
+      ),
     );
   }
 }
@@ -236,7 +239,7 @@ class _RecordList extends ConsumerWidget {
 class _RecordCard extends ConsumerStatefulWidget {
   final MoneyRecord record;
 
-  const _RecordCard({required this.record});
+  const _RecordCard({super.key, required this.record});
 
   @override
   ConsumerState<_RecordCard> createState() => _RecordCardState();
