@@ -1,12 +1,17 @@
 name: Flutter CI/CD
 
 on:
+  # Automatic - triggers on push and PR
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+
+  # Automatic - runs every day at midnight UTC
   schedule:
     - cron: '0 0 * * *'
+
+  # Manual - trigger from GitHub Actions UI
   workflow_dispatch:
     inputs:
       build_type:
@@ -67,18 +72,18 @@ jobs:
       - name: Build Debug APK
         if: |
           github.event.inputs.build_type == 'debug' ||
-          github.event.inputs.build_type == 'both' ||
-          github.event_name == 'push' ||
-          github.event_name == 'pull_request' ||
+          github.event.inputs.build_type == 'both'  ||
+          github.event_name == 'push'               ||
+          github.event_name == 'pull_request'       ||
           github.event_name == 'schedule'
         run: flutter build apk --debug
 
       - name: Upload Debug APK
         if: |
           github.event.inputs.build_type == 'debug' ||
-          github.event.inputs.build_type == 'both' ||
-          github.event_name == 'push' ||
-          github.event_name == 'pull_request' ||
+          github.event.inputs.build_type == 'both'  ||
+          github.event_name == 'push'               ||
+          github.event_name == 'pull_request'       ||
           github.event_name == 'schedule'
         uses: actions/upload-artifact@v4
         with:
@@ -87,26 +92,22 @@ jobs:
 
       - name: Prepare Release Signing
         id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         if: |
-          secrets.KEYSTORE_BASE64 != '' && (
+          env.KEYSTORE_BASE64 != '' && (
             github.event.inputs.build_type == 'release' ||
-            github.event.inputs.build_type == 'both' ||
-            github.event_name == 'push' ||
+            github.event.inputs.build_type == 'both'    ||
+            github.event_name == 'push'                 ||
             github.event_name == 'schedule'
           )
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/pactora.jks
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=pactora.jks" >> android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}"  > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}"     >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}"           >> android/key.properties
+          echo "storeFile=pactora.jks"                       >> android/key.properties
           echo "has_keystore=true" >> $GITHUB_OUTPUT
-
-      - name: Add Google Play Verification File
-        if: steps.signing.outputs.has_keystore == 'true'
-        run: |
-          mkdir -p android/app/src/main/assets
-          echo "CPUCXMWPQ4GJWAAAAAAAAAAAAA" > android/app/src/main/assets/adi-registration.properties
 
       - name: Build Release APK
         if: steps.signing.outputs.has_keystore == 'true'
