@@ -15,7 +15,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.sooubh.pactora"
+    namespace = "com.pactora.sooubh"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sooubh.pactora"
+        applicationId = "com.pactora.sooubh"
         minSdk = 21 // Isar requires at least 21
         targetSdk = 34
         versionCode = flutter.versionCode
