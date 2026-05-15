@@ -38,7 +38,7 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
 
     if (index != -1) {
       // Calculate offset considering ads
-      final adInterval = 5;
+      const adInterval = 5;
       int adCount = index ~/ adInterval;
       double offset = (index * _itemHeight) + (adCount * _adHeight);
       
