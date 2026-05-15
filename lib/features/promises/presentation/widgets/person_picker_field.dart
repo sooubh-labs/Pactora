@@ -52,120 +52,196 @@ class PersonPickerField extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Select Person', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        TextButton.icon(
-                          onPressed: () => _addNewPerson(context, ref),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: const Text('Add New'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (people.isEmpty)
-                    Expanded(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            const Text('No people added yet', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: () => _addNewPerson(context, ref),
-                              icon: const Icon(Icons.person_add),
-                              label: const Text('Add First Person'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        itemCount: people.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == people.length) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: AppColors.primary.withOpacity(0.1),
-                                  child: const Icon(Icons.person_add_rounded, color: AppColors.primary, size: 20),
-                                ),
-                                title: const Text('Add New Person', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
-                                ),
-                                onTap: () => _addNewPerson(context, ref),
-                              ),
-                            );
-                          }
-
-                          final person = people[index];
-                          final isSelected = person.id == selectedPersonId;
-                          return ListTile(
-                            leading: PersonAvatar(name: person.name, avatarPath: person.avatarPath),
-                            title: Text(person.name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-                            trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.green) : null,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            onTap: () {
-                              onPersonSelected(person);
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
+        return _PersonPickerSheet(
+          people: people,
+          selectedPersonId: selectedPersonId,
+          onPersonSelected: onPersonSelected,
         );
       },
     );
   }
+}
 
-  Future<void> _addNewPerson(BuildContext context, WidgetRef ref) async {
+class _PersonPickerSheet extends ConsumerStatefulWidget {
+  final List<Person> people;
+  final int? selectedPersonId;
+  final ValueChanged<Person> onPersonSelected;
+
+  const _PersonPickerSheet({
+    required this.people,
+    required this.selectedPersonId,
+    required this.onPersonSelected,
+  });
+
+  @override
+  ConsumerState<_PersonPickerSheet> createState() => _PersonPickerSheetState();
+}
+
+class _PersonPickerSheetState extends ConsumerState<_PersonPickerSheet> {
+  late TextEditingController _searchController;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _addNewPerson(BuildContext context) async {
     final result = await context.push<int>('/people/add');
     if (result != null && context.mounted) {
       final newPerson = await ref.read(personRepositoryProvider).getPersonById(result);
       if (newPerson != null && context.mounted) {
-        onPersonSelected(newPerson);
+        widget.onPersonSelected(newPerson);
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredPeople = widget.people
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      minChildSize: 0.4,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Select Person', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    TextButton.icon(
+                      onPressed: () => _addNewPerson(context),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add New'),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search contact...',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                ),
+              ),
+              if (widget.people.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline, size: 64, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        const Text('No people added yet', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => _addNewPerson(context),
+                          icon: const Icon(Icons.person_add),
+                          label: const Text('Add First Person'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (filteredPeople.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off_rounded, size: 64, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        Text('No results for "$_searchQuery"', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: filteredPeople.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == filteredPeople.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: const Icon(Icons.person_add_rounded, color: AppColors.primary, size: 20),
+                            ),
+                            title: const Text('Add New Person', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+                            ),
+                            onTap: () => _addNewPerson(context),
+                          ),
+                        );
+                      }
+
+                      final person = filteredPeople[index];
+                      final isSelected = person.id == widget.selectedPersonId;
+                      return ListTile(
+                        leading: PersonAvatar(name: person.name, avatarPath: person.avatarPath),
+                        title: Text(person.name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                        trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.green) : null,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        onTap: () {
+                          widget.onPersonSelected(person);
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

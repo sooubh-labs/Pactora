@@ -7,11 +7,51 @@ import '../../../shared/widgets/person_avatar.dart';
 import '../domain/person_model.dart';
 import 'person_provider.dart';
 
-class PeopleScreen extends ConsumerWidget {
+class PeopleScreen extends ConsumerStatefulWidget {
   const PeopleScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PeopleScreen> createState() => _PeopleScreenState();
+}
+
+class _PeopleScreenState extends ConsumerState<PeopleScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final List<String> _alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
+  
+  // Approximate heights for scrolling
+  final double _itemHeight = 88.0; // Card + Separator
+  final double _adHeight = 70.0; // Estimated BannerAdWidget + extra separators
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToLetter(String letter, List<Person> people) {
+    int index = -1;
+    if (letter == '#') {
+      index = people.indexWhere((p) => p.name.isEmpty || !RegExp(r'[A-Z]').hasMatch(p.name[0].toUpperCase()));
+    } else {
+      index = people.indexWhere((p) => p.name.toUpperCase().startsWith(letter));
+    }
+
+    if (index != -1) {
+      // Calculate offset considering ads
+      final adInterval = 5;
+      int adCount = index ~/ adInterval;
+      double offset = (index * _itemHeight) + (adCount * _adHeight);
+      
+      _scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final peopleAsync = ref.watch(allPeopleProvider);
 
     return Scaffold(
@@ -33,62 +73,32 @@ class PeopleScreen extends ConsumerWidget {
       body: peopleAsync.when(
         data: (people) {
           if (people.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.people_outline_rounded, size: 64, color: AppColors.primaryLight),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'No people yet',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add your contacts to start tracking promises and records together.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () => context.push('/people/add'),
-                          icon: const Icon(Icons.person_add_rounded),
-                          label: const Text('Add'),
-                        ),
-                        const SizedBox(width: 16),
-                        OutlinedButton.icon(
-                          onPressed: () => context.push('/people/import'),
-                          icon: const Icon(Icons.contact_page_outlined),
-                          label: const Text('Import'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _buildEmptyState(context);
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 140),
-            itemCount: people.length,
-            separatorBuilder: (context, index) => AdListSeparator(index: index),
-            itemBuilder: (context, index) {
-              final person = people[index];
-              return _PersonCard(person: person);
-            },
+          return Stack(
+            children: [
+              ListView.separated(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 8, 40, 140),
+                itemCount: people.length,
+                separatorBuilder: (context, index) => AdListSeparator(index: index),
+                itemBuilder: (context, index) {
+                  final person = people[index];
+                  return _PersonCard(person: person);
+                },
+              ),
+              Positioned(
+                right: 0,
+                top: 20,
+                bottom: 140,
+                width: 32,
+                child: _AlphabetScrollbar(
+                  alphabet: _alphabet,
+                  onLetterSelected: (letter) => _scrollToLetter(letter, people),
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -98,6 +108,110 @@ class PeopleScreen extends ConsumerWidget {
         onPressed: () => context.push('/people/add'),
         child: const Icon(Icons.person_add_rounded),
       ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.people_outline_rounded, size: 64, color: AppColors.primaryLight),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No people yet',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Add your contacts to start tracking promises and records together.',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => context.push('/people/add'),
+                  icon: const Icon(Icons.person_add_rounded),
+                  label: const Text('Add'),
+                ),
+                const SizedBox(width: 16),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/people/import'),
+                  icon: const Icon(Icons.contact_page_outlined),
+                  label: const Text('Import'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AlphabetScrollbar extends StatelessWidget {
+  final List<String> alphabet;
+  final ValueChanged<String> onLetterSelected;
+
+  const _AlphabetScrollbar({
+    required this.alphabet,
+    required this.onLetterSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double itemHeight = constraints.maxHeight / alphabet.length;
+        
+        return GestureDetector(
+          onVerticalDragUpdate: (details) {
+            int index = (details.localPosition.dy / itemHeight).floor();
+            if (index >= 0 && index < alphabet.length) {
+              onLetterSelected(alphabet[index]);
+            }
+          },
+          onTapDown: (details) {
+            int index = (details.localPosition.dy / itemHeight).floor();
+            if (index >= 0 && index < alphabet.length) {
+              onLetterSelected(alphabet[index]);
+            }
+          },
+          child: Container(
+            color: Colors.transparent,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: alphabet.map((letter) {
+                return SizedBox(
+                  height: itemHeight,
+                  child: Center(
+                    child: Text(
+                      letter,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }

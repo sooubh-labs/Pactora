@@ -320,12 +320,52 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
   void _save() async {
     if (_formKey.currentState!.validate()) {
+      final name = _nameController.text.trim();
+      final phone = _phoneController.text.trim();
+
+      // Check for duplicates
+      final people = await ref.read(personRepositoryProvider).getAllPeople();
+      final duplicate = people.where((p) {
+        if (widget.person != null && p.id == widget.person!.id) return false;
+
+        final nameMatch = p.name.toLowerCase() == name.toLowerCase();
+        
+        String cleanPhone(String? p) => p?.replaceAll(RegExp(r'[\s\-\(\)]'), '') ?? '';
+        final cleanInputPhone = cleanPhone(phone);
+        final phoneMatch = cleanInputPhone.isNotEmpty && cleanPhone(p.phone) == cleanInputPhone;
+
+        return nameMatch || phoneMatch;
+      }).firstOrNull;
+
+      if (duplicate != null && mounted) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Duplicate Contact'),
+            content: Text(
+              'A person with the same ${duplicate.name.toLowerCase() == name.toLowerCase() ? 'name' : 'phone number'} already exists (${duplicate.name}). Do you want to save anyway?'
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Save Anyway'),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+
       final person = widget.person ?? Person()
-        ..name = _nameController.text
-        ..email = _emailController.text.isEmpty ? null : _emailController.text
-        ..phone = _phoneController.text.isEmpty ? null : _phoneController.text
+        ..name = name
+        ..email = _emailController.text.isEmpty ? null : _emailController.text.trim()
+        ..phone = phone.isEmpty ? null : phone
         ..avatarPath = _avatarPath
-        ..notes = _notesController.text.isEmpty ? null : _notesController.text;
+        ..notes = _notesController.text.isEmpty ? null : _notesController.text.trim();
 
       if (widget.person != null) {
         person.id = widget.person!.id;
