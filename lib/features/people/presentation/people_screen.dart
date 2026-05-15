@@ -19,6 +19,11 @@ class PeopleScreen extends ConsumerWidget {
         title: const Text('People'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.contact_page_outlined),
+            onPressed: () => context.push('/people/import'),
+            tooltip: 'Import Contacts',
+          ),
+          IconButton(
             icon: const Icon(Icons.search_rounded),
             onPressed: () => context.push('/search'),
           ),
@@ -54,10 +59,21 @@ class PeopleScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
-                    ElevatedButton.icon(
-                      onPressed: () => context.push('/people/add'),
-                      icon: const Icon(Icons.person_add_rounded),
-                      label: const Text('Add someone'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => context.push('/people/add'),
+                          icon: const Icon(Icons.person_add_rounded),
+                          label: const Text('Add'),
+                        ),
+                        const SizedBox(width: 16),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push('/people/import'),
+                          icon: const Icon(Icons.contact_page_outlined),
+                          label: const Text('Import'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -66,7 +82,7 @@ class PeopleScreen extends ConsumerWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 140),
             itemCount: people.length,
             separatorBuilder: (context, index) => AdListSeparator(index: index),
             itemBuilder: (context, index) {

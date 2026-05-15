@@ -27,6 +27,7 @@ import '../features/people/presentation/people_screen.dart';
 import '../features/people/presentation/add_person_screen.dart';
 import '../features/people/presentation/person_detail_screen.dart';
 import '../features/people/presentation/person_provider.dart';
+import '../features/people/presentation/contact_import_screen.dart';
 import '../features/search/presentation/search_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/settings/presentation/premium_screen.dart';
@@ -190,6 +191,10 @@ final router = GoRouter(
               builder: (context, state) => const AddPersonScreen(),
             ),
             GoRoute(
+              path: 'import',
+              builder: (context, state) => const ContactImportScreen(),
+            ),
+            GoRoute(
               path: 'edit/:id',
               builder: (context, state) {
                 final id = int.parse(state.pathParameters['id']!);
@@ -237,4 +242,3 @@ final router = GoRouter(
     ),
   ],
 );
-
