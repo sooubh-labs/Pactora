@@ -65,6 +65,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create ADI Registration File
+        run: |
+          mkdir -p android/app/src/main/assets
+          echo "${{ secrets.ADI_REGISTRATION_KEY }}" > android/app/src/main/assets/adi-registration.properties
+
       - name: Run Analyze
         if: github.event.inputs.run_tests != 'false'
         run: flutter analyze
