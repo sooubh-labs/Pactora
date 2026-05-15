@@ -82,6 +82,7 @@ class _ArchiveScreenState extends ConsumerState<ArchiveScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
             Expanded(
               child: TabBarView(
                 children: [

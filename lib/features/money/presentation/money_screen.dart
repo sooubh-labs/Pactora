@@ -266,9 +266,10 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
 
     return Slidable(
       endActionPane: ActionPane(
-        extentRatio: 0.5,
+        extentRatio: 0.6,
         motion: const ScrollMotion(),
         children: [
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(moneyRepositoryProvider).archiveRecord(record.id);
@@ -278,6 +279,7 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
             borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.archive_outlined),
           ),
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(moneyRepositoryProvider).deleteRecord(record.id);
@@ -287,6 +289,7 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
             borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.delete_outline_rounded),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       startActionPane: record.status != MoneyStatus.paid ? ActionPane(

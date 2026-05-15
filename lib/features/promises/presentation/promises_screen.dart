@@ -281,9 +281,10 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
 
     return Slidable(
       endActionPane: ActionPane(
-        extentRatio: 0.5,
+        extentRatio: 0.6,
         motion: const ScrollMotion(),
         children: [
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(promiseRepositoryProvider).archivePromise(promise.id);
@@ -293,6 +294,7 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
             borderRadius: BorderRadius.circular(24),
             child: const Icon(Icons.archive_outlined),
           ),
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(promiseRepositoryProvider).deletePromise(promise.id);
@@ -302,6 +304,7 @@ class _PromiseCardState extends ConsumerState<_PromiseCard> {
             borderRadius: BorderRadius.circular(24),
             child: const Icon(Icons.delete_outline_rounded),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       startActionPane: promise.status == PromiseStatus.pending ? ActionPane(

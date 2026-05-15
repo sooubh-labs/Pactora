@@ -271,9 +271,10 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
 
     return Slidable(
       endActionPane: ActionPane(
-        extentRatio: 0.5,
+        extentRatio: 0.6,
         motion: const ScrollMotion(),
         children: [
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(itemRepositoryProvider).archiveItem(item.id);
@@ -283,6 +284,7 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
             borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.archive_outlined),
           ),
+          const SizedBox(width: 8),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(itemRepositoryProvider).deleteItem(item.id);
@@ -292,6 +294,7 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
             borderRadius: BorderRadius.circular(32),
             child: const Icon(Icons.delete_outline_rounded),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       startActionPane: item.status == ItemStatus.active ? ActionPane(
