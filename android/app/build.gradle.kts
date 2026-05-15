@@ -31,7 +31,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pactora.sooubh"
-        minSdk = 21 // Isar requires at least 21
+        minSdk = 24 // Flutter and image_picker require at least 24
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
