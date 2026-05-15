@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/user_preferences_provider.dart';
 import '../../../core/services/data_seed_service.dart';
 import '../../people/data/person_repository.dart';
@@ -24,6 +25,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Step 1 State
   final _nameController = TextEditingController();
   CurrencyOption _selectedCurrency = currencyOptions.first;
+  bool _acceptedTerms = false;
 
   // Step 2 State
   bool _theyOweMe = true;
@@ -43,6 +45,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter your name')),
+      );
+      return;
+    }
+    if (!_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the Terms and Privacy Policy')),
       );
       return;
     }
@@ -101,8 +109,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _WelcomeSetupPage(
                     nameController: _nameController,
                     selectedCurrency: _selectedCurrency,
+                    acceptedTerms: _acceptedTerms,
                     onCurrencyChanged: (val) {
                       if (val != null) setState(() => _selectedCurrency = val);
+                    },
+                    onTermsChanged: (val) {
+                      setState(() => _acceptedTerms = val ?? false);
                     },
                     onNext: _nextPage,
                   ),
@@ -126,23 +138,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 class _WelcomeSetupPage extends StatelessWidget {
   final TextEditingController nameController;
   final CurrencyOption selectedCurrency;
+  final bool acceptedTerms;
   final ValueChanged<CurrencyOption?> onCurrencyChanged;
+  final ValueChanged<bool?> onTermsChanged;
   final VoidCallback onNext;
 
   const _WelcomeSetupPage({
     required this.nameController,
     required this.selectedCurrency,
+    required this.acceptedTerms,
     required this.onCurrencyChanged,
+    required this.onTermsChanged,
     required this.onNext,
   });
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Gap(40),
           Image.asset('assets/images/app-logo.png', width: 140, height: 140),
           const Gap(24),
           const Text('Welcome to Pactora!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -152,6 +174,7 @@ class _WelcomeSetupPage extends StatelessWidget {
           TextField(
             controller: nameController,
             decoration: const InputDecoration(labelText: 'YOUR NAME', hintText: 'e.g. Alex'),
+            textCapitalization: TextCapitalization.words,
           ),
           const Gap(24),
           DropdownButtonFormField<CurrencyOption>(
@@ -162,6 +185,60 @@ class _WelcomeSetupPage extends StatelessWidget {
               child: Text('${opt.name} (${opt.symbol})'),
             )).toList(),
             onChanged: onCurrencyChanged,
+          ),
+          const Gap(32),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: Checkbox(
+                  value: acceptedTerms,
+                  onChanged: onTermsChanged,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const Gap(12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'I agree to the terms and privacy policy',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => _launchUrl('https://sooubh.github.io/pactora/terms.html'),
+                          child: Text(
+                            'Terms',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const Text(' & ', style: TextStyle(fontSize: 12)),
+                        GestureDetector(
+                          onTap: () => _launchUrl('https://sooubh.github.io/pactora/privacy.html'),
+                          child: Text(
+                            'Privacy Policy',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const Gap(48),
           SizedBox(
@@ -238,11 +315,13 @@ class _FirstPromisePage extends StatelessWidget {
           TextField(
             controller: whoController,
             decoration: const InputDecoration(hintText: 'Who? (e.g. John)'),
+            textCapitalization: TextCapitalization.words,
           ),
           const Gap(16),
           TextField(
             controller: whatController,
             decoration: const InputDecoration(hintText: 'What? (e.g. \$20 for lunch or a Book)'),
+            textCapitalization: TextCapitalization.sentences,
           ),
           const Gap(48),
           SizedBox(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 
 class MoreScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,17 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
     });
   }
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not launch $url')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Refresh profile when screen is built (in case user just navigated back from profile edit)
@@ -36,7 +48,6 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
 
     return Scaffold(
       body: SafeArea(
-        bottom: false,
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           children: [
@@ -90,6 +101,30 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                 color: AppColors.textSecondary,
                 bgColor: AppColors.textSecondary.withOpacity(0.1),
                 onTap: () => context.push('/settings'),
+              ),
+            ]),
+            const SizedBox(height: 24),
+            _buildMenuGroup([
+              _MenuData(
+                icon: Icons.help_outline_rounded,
+                title: 'How to Use',
+                color: const Color(0xFF00897B),
+                bgColor: const Color(0xFFE0F2F1),
+                onTap: () => _launchUrl('https://sooubh.github.io/pactora/how-to-use.html'),
+              ),
+              _MenuData(
+                icon: Icons.gavel_rounded,
+                title: 'Terms of Service',
+                color: const Color(0xFFFB8C00),
+                bgColor: const Color(0xFFFFF3E0),
+                onTap: () => _launchUrl('https://sooubh.github.io/pactora/terms.html'),
+              ),
+              _MenuData(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                color: const Color(0xFF5E35B1),
+                bgColor: const Color(0xFFEDE7F6),
+                onTap: () => _launchUrl('https://sooubh.github.io/pactora/privacy.html'),
               ),
             ]),
             const SizedBox(height: 140), // padding for floating nav
