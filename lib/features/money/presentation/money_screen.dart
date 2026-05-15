@@ -266,9 +266,18 @@ class _RecordCardState extends ConsumerState<_RecordCard> {
 
     return Slidable(
       endActionPane: ActionPane(
-        extentRatio: 0.25,
+        extentRatio: 0.5,
         motion: const ScrollMotion(),
         children: [
+          CustomSlidableAction(
+            onPressed: (context) async {
+              await ref.read(moneyRepositoryProvider).archiveRecord(record.id);
+            },
+            backgroundColor: AppColors.textSecondary.withOpacity(0.1),
+            foregroundColor: AppColors.textSecondary,
+            borderRadius: BorderRadius.circular(32),
+            child: const Icon(Icons.archive_outlined),
+          ),
           CustomSlidableAction(
             onPressed: (context) async {
               await ref.read(moneyRepositoryProvider).deleteRecord(record.id);

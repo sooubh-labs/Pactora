@@ -32,6 +32,17 @@ class MoneyRepository {
     await NotificationService.cancelMoneyNotification(id);
   }
 
+  Future<void> archiveRecord(int id) async {
+    await _db.writeTxn(() async {
+      final record = await _db.moneyRecords.get(id);
+      if (record != null) {
+        record.isArchived = true;
+        await _db.moneyRecords.put(record);
+      }
+    });
+    await NotificationService.cancelMoneyNotification(id);
+  }
+
   Stream<List<MoneyRecord>> watchRecordsByPerson(int personId) {
     return _db.moneyRecords
         .filter()

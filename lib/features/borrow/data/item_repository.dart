@@ -32,6 +32,17 @@ class ItemRepository {
     await NotificationService.cancelBorrowNotification(id);
   }
 
+  Future<void> archiveItem(int id) async {
+    await _db.writeTxn(() async {
+      final item = await _db.borrowItems.get(id);
+      if (item != null) {
+        item.isArchived = true;
+        await _db.borrowItems.put(item);
+      }
+    });
+    await NotificationService.cancelBorrowNotification(id);
+  }
+
   Stream<List<BorrowItem>> watchItemsByPerson(int personId) {
     return _db.borrowItems
         .filter()

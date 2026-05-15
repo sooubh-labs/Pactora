@@ -78,6 +78,17 @@ class PromiseRepository {
     await NotificationService.cancelPromiseNotification(id);
   }
 
+  Future<void> archivePromise(int id) async {
+    await _db.writeTxn(() async {
+      final promise = await _db.promises.get(id);
+      if (promise != null) {
+        promise.isArchived = true;
+        await _db.promises.put(promise);
+      }
+    });
+    await NotificationService.cancelPromiseNotification(id);
+  }
+
   Stream<List<Promise>> watchPromisesByPerson(int personId) {
     return _db.promises
         .filter()
