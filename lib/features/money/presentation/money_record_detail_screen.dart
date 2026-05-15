@@ -259,17 +259,17 @@ class MoneyRecordDetailScreen extends ConsumerWidget {
   void _showDeleteDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Record?'),
         content: const Text('Are you sure you want to delete this money record?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
+              Navigator.of(dialogContext).pop();
               await ref.read(moneyRepositoryProvider).deleteRecord(id);
               if (context.mounted) {
-                context.pop();
-                context.pop();
+                context.go('/finances?tab=money');
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),

@@ -286,17 +286,17 @@ class BorrowItemDetailScreen extends ConsumerWidget {
   void _showDeleteDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Item?'),
         content: const Text('Are you sure you want to delete this record?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
+              Navigator.of(dialogContext).pop();
               await ref.read(itemRepositoryProvider).deleteItem(id);
               if (context.mounted) {
-                context.pop();
-                context.pop();
+                context.go('/finances?tab=borrow');
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),

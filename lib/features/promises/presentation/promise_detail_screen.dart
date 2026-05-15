@@ -307,17 +307,17 @@ class PromiseDetailScreen extends ConsumerWidget {
   void _showDeleteDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Promise?'),
         content: const Text('Are you sure you want to delete this promise?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
+              Navigator.of(dialogContext).pop();
               await ref.read(promiseRepositoryProvider).deletePromise(id);
               if (context.mounted) {
-                context.pop();
-                context.pop();
+                context.go('/promises');
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
