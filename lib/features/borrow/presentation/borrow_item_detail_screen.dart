@@ -272,7 +272,7 @@ class BorrowItemDetailScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item marked as returned!')),
       );
-      Navigator.of(context).pop();
+      context.go('/finances?tab=borrow');
     }
   }
 

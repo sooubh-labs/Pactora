@@ -245,7 +245,7 @@ class MoneyRecordDetailScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Record marked as settled!')),
       );
-      Navigator.of(context).pop();
+      context.go('/finances?tab=money');
     }
   }
 

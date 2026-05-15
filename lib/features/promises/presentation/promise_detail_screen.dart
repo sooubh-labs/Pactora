@@ -293,7 +293,7 @@ class PromiseDetailScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Promise marked as completed!')),
       );
-      Navigator.of(context).pop();
+      context.go('/promises');
     }
   }
 

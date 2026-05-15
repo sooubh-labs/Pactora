@@ -78,16 +78,6 @@ class _FinancesScreenState extends State<FinancesScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_currentIndex == 0) {
-            context.push('/money/add');
-          } else {
-            context.push('/borrow/add');
-          }
-        },
-        child: const Icon(Icons.add_rounded),
-      ),
     );
   }
 
