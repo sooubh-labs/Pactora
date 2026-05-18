@@ -1,10 +1,17 @@
-# Memory and Vector Search
+# AI Memory and Retrieval
 
-## Structured context
-Current promises, debts, reminders, person context.
+Hybrid retrieval architecture.
 
-## Semantic memory
-Embeddings stored in Isar.
+Structured context:
+- promises
+- debts
+- reminders
+- people context
 
-## Flow
-record create/update -> embedding -> storage -> retrieval
+Semantic memory:
+- embeddings in Isar
+- top K retrieval
+- summary cache
+
+Flow:
+record change to embedding generation to storage to retrieval to prompt injection.
