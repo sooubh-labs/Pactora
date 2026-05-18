@@ -1,7 +1,15 @@
-# Prompt Engineering
+# AI Prompt Engineering
 
-System prompt rules:
+Rules:
 - use tools for facts
-- do not hallucinate records
-- keep practical responses
-- respect privacy
+- never invent records
+- concise practical responses
+- privacy boundaries
+- confirmation for mutations
+
+Prompt structure:
+system prompt
+screen context
+retrieved memory
+tool outputs
+user query
