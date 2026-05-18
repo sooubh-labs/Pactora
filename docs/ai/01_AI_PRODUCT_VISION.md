@@ -1,22 +1,38 @@
 # AI Product Vision
 
-## Goal
-Build Pactora AI: a fully offline, privacy-first assistant for commitments, debts, reminders, and relationship memory.
+## Mission
+Transform Pactora from a tracking app into an offline commitment intelligence platform.
 
-## Core user jobs
-- What am I forgetting?
-- Who owes me money?
-- What commitments are overdue?
-- Summarize my history with a person.
-- Draft reminder messages.
-- Help decide whether to commit.
+## Product Thesis
+Users do not need another chatbot.
+Users need a reliable assistant that understands commitments, people, debts, reminders, and accountability patterns.
 
-## Product principles
-- Offline by default
-- Privacy-first
-- Fast first response
-- Actionable, not chat for chat's sake
-- Context-aware inside app screens
+## Core Use Cases
+- forgotten commitments detection
+- debt awareness
+- relationship recall
+- reminder drafting
+- commitment prioritization
+- commitment risk reflection
 
-## MVP scope
-Chat assistant + contextual summaries + reminder drafting.
+## Product Principles
+- offline-first
+- privacy-first
+- grounded responses only
+- action oriented
+- context aware
+- fast and low friction
+
+## AI Persona
+Pactora AI should feel:
+- practical
+- trustworthy
+- concise
+- emotionally intelligent
+
+## MVP Definition
+- AI chat assistant
+- dashboard insights
+- debt summaries
+- people summaries
+- reminder drafting
