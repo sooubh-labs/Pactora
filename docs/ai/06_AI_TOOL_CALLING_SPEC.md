@@ -1,6 +1,11 @@
-# Tool Calling Spec
+# AI Tool Calling Specification
 
-AI never directly mutates DB.
+AI never directly mutates data.
+
+Rules:
+- deterministic tools only
+- user confirmation for writes
+- structured outputs only
 
 Tools:
 - listPromises
@@ -8,5 +13,6 @@ Tools:
 - listDebts
 - listBorrowedItems
 - searchPeople
+- getPersonHistory
+- createReminderDraft
 - createReminder
-- draftReminderMessage
