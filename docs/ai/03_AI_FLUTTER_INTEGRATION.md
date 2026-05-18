@@ -1,16 +1,35 @@
 # Flutter Integration
 
-## New modules
+## New Modules
 lib/core/ai/
 lib/features/ai/
 
-## Providers
+## Riverpod Providers
 - aiSessionProvider
-- aiModelProvider
+- aiRuntimeProvider
+- aiModelDownloadProvider
 - aiContextProvider
-- aiToolProvider
+- aiToolRegistryProvider
+- semanticSearchProvider
 
-## UI
+## UI Integration Points
+Global:
+- floating assistant entry button
+
+Feature integration:
+- dashboard insight cards
+- promise detail AI actions
+- people summary AI actions
+- money summary AI actions
+- search assistant overlay
+
+## New Screens
 - AI chat screen
-- contextual assistant buttons
-- loading/model download UI
+- model download setup screen
+- unsupported device screen
+
+## Streaming UI Requirements
+- token streaming
+- cancel button
+- retry button
+- partial response rendering
