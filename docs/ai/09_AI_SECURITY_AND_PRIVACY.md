@@ -1,7 +1,9 @@
-# Security and Privacy
+# AI Security and Privacy
 
+Rules:
+- local inference only
 - no secrets in prompts
-- no hidden credentials
+- no unrestricted DB access
 - explicit permission boundaries
-- no unrestricted DB mutation
-- local-only inference
+- confirmation for mutations
+- model integrity verification
