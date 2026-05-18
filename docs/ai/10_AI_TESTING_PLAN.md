@@ -1,8 +1,5 @@
-# Testing Plan
+# AI Testing Plan
 
-- tool tests
-- prompt tests
-- context tests
-- integration tests
-- performance benchmarks
-- model loading tests
+Unit tests for tools, prompts, context, retrieval.
+Integration tests for AI query flows and model loading.
+Performance checks for latency and memory use.
